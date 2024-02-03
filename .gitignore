@@ -1,0 +1,26 @@
+# Virtual environment
+.venv
+# Work environment
+.vscode
+
+# I don't wanna upload mp3 files...
+*.mp3
+testfiles/
+files/*
+temp/*
+album_covers/
+
+# Uploading executable is propably also not a good idea
+database/sqldiff.exe
+database/sqlite3.exe
+database/sqlite3_analyzer.exe
+
+# Keep database private too
+*.db
+
+# My personal todolist!
+todo.txt
+
+# Some other weird stuff
+app/__pycache__/
+app/sql/__pycache__/

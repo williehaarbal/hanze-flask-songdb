@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>File upload</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  </head>
+  <body>
+    <h1>FILES UPLOADED UNDER SESSION: {{ us }}</h1>
+
+    <button onclick="performPost()">PERFORM POST</button>
+ 
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">id</th>
+            <th scope="col">upload session</th>
+            <th scope="col">song_name</th>
+            <th scope="col">artist</th>
+            <th scope="col">album</th>
+            <th scope="col">path_album_image</th>
+            <th scope="col">extention</th>
+            <th scope="col">song_length</th>
+          </tr>
+        </thead>
+
+        <!-- id, upload_session, song_name, artist, album, path_album_image, extention, song_length -->
+        <tbody>
+
+            {% for row in rows %}
+                <tr>
+                    <td>{{row[0]}}</td>
+                    <td>{{row[1]}}</td>
+                    <td><input class="form-control" id="{{row[0]}}-song" type="text" placeholder="{{row[2]}}" value="{{row[2]}}"></td>
+                    <td>{{row[3]}}</td>
+                    <td>{{row[4]}}</td>
+                    <td>{{row[5]}}</td>
+                    <td>{{row[6]}}</td>
+                    <td>{{row[7]}}</td>
+                </tr>
+            {% endfor %}
+
+        </tbody>
+      </table>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  </body>
+  <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+
+
+  <script>
+    function performPost() {
+        var changed = {}
+
+        {% for row in rows %}
+            ph = document.getElementById("{{row[0]}}-song").placeholder;
+            vl = document.getElementById("{{row[0]}}-song").value;
+
+            if (ph != vl) {
+                changed["{{row[0]}}-song"] = document.getElementById("{{row[0]}}-song").value;
+            }
+        // @ts-ignore    
+        {% endfor %}
+
+        console.log("TRYNA MY BEST");
+        $.ajax({
+            
+            type: "POST",
+            url: "/upload/{{us}}",
+            data: changed
+        })
+    }
+  </script>
+</html>
+
+
+<!-- http://127.0.0.1:5000/upload/8873815703479665648 -->
