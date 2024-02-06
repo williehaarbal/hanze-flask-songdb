@@ -43,3 +43,61 @@ def SQL_CHANGE_ELEMENT_BY_ID(id: int, what: str, value: str) -> str:
     WHERE id = {id};
 
 """
+
+def SQL_INSERT_NEW_USER(user_static_id, name: str, username: str, password: str, crypt_method: str, email: str, confirmed_email: str, loc_profile_pic: str, country_flag: str, admin: str, active: str) -> str:
+    return f"""
+
+INSERT INTO users(user_static_id, name, username, password, crypt_method, email, confirmed_email, loc_profile_pic, country_flag, admin, active, created_at)
+VALUES(
+'{user_static_id}',
+'{name}',
+'{username}',
+'{password}',
+'{crypt_method}',
+'{email}',
+'{confirmed_email}',
+'{loc_profile_pic}',
+'{country_flag}',
+'{admin}',
+'{active}',
+datetime('now')
+);
+
+""".format(user_static_id, name, username, password, crypt_method, email, confirmed_email, loc_profile_pic, country_flag, admin, active)
+
+
+
+# CHECKED
+def SQL_USERNAME_EXISTS(username: str) -> str:
+    return f"""
+SELECT
+    CASE WHEN EXISTS 
+    (
+        SELECT * FROM users 
+        WHERE lower(username) == lower('{username}')
+    )
+    THEN 'True'
+    ELSE 'False'
+    END;
+    """.format(username = username)
+
+# CHECKED
+def SQL_CONFIRMED_EMAIL_EXISTS(email: str) -> str:
+    return f"""
+SELECT
+    CASE WHEN EXISTS 
+    (
+        SELECT * FROM users 
+        WHERE lower(email) == lower('{email}') AND confirmed_email == 'True'
+    )
+    THEN 'True'
+    ELSE 'False'
+    END;
+    """.format(email = email)
+
+def SQL_GET_HIGHEST_USER_ID() -> str:
+    return f"""
+    SELECT max(user_static_id)
+    FROM users;
+"""
+

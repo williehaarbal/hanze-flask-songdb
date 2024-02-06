@@ -1,0 +1,11 @@
+body {
+    background-image: url(../img/bg_dark_1.jpg);
+    background-color: black;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+}
+
+#c-navbar-search {
+    width: 15vw;
+}

@@ -1,1 +1,7 @@
 eyed3
+flask
+flask_wtf
+wtforms
+wtforms.validators
+flask_bcrypt
+email_validator

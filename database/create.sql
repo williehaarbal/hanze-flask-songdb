@@ -22,9 +22,9 @@ CREATE TABLE IF NOT EXISTS users(
     name TEXT,
     username TEXT UNIQUE,
     email TEXT UNIQUE,
-    country_flag TEXT,
-    confirmed INTEGER,
+    confirmed_email INTEGER,
     loc_profile_pic TEXT,
+    country_flag TEXT,
 
     -- Security
     password TEXT,
