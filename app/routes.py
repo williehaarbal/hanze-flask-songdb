@@ -3,19 +3,46 @@ from flask_wtf import FlaskForm
 from wtforms import FileField, MultipleFileField, SubmitField
 from wtforms.validators import InputRequired
 from flask_wtf.file import FileAllowed
+from flask_login import login_user, current_user
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
 from app.sql.sql import *
 import eyed3
+import logging
 import sqlite3
 import uuid
 import pathlib
 import os
 
+from app.models import User
 from app.forms import *
 from app.db_handler import DB
 
 from app import app
+from app import bcrypt
+
+
+@app.route('/log')
+def log():
+    print('Log page')
+
+    user = User('1', 'William')
+
+
+    print(f'Before: {login_user}')
+    login_user(user)
+    print(f'After: {login_user}')
+
+
+    return redirect(url_for('home'))
+
+@app.route('/')
+def home():
+    print('Home page')
+    print(current_user)
+    print(current_user)
+    return "You're home."
+
 
 
 @app.route('/upload/<session>')
@@ -61,7 +88,7 @@ def update_upload_session(session):
 
 
 @app.route('/upload', methods=['GET', 'POST'])
-def upload():
+def upload(session):
     
     upload_form = UploadFileForm()
     if upload_form.validate_on_submit():
@@ -160,6 +187,47 @@ def upload():
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+
+    if form.validate_on_submit():
+
+        print(f'T2: {form.password.data} ')
+        
+        used_email = form.email.data
+        used_pw = form.password.data
+        username = None
+
+        # We get the hashed password for that email
+        db = DB()
+        db.exe(SQL_GET_PASSWORD_HASH_FOR_EMAIL(used_email))
+        hashed_password = db.fall()[0][0]
+        db.close()
+
+        print(f'T1: {hashed_password} ')
+
+        if (bcrypt.check_password_hash(hashed_password, used_pw)):
+            print('Right password!')
+            db = DB()
+            db.exe(SQL_GET_USERNAME_FOR_EMAIL(used_email))
+            username = db.fall()[0][0]
+            current = User(username)
+            william_current_user = current
+
+            print(current)
+            print(type(current))
+            print('login succesfull?')
+            print(login_user(user=current, remember=True, force=True))
+
+            print(current)
+            print(type(current))
+
+            return redirect(url_for('home'))
+        else:
+            print('Wrong password!')
+
+        # flash('Login')
+            
+        
+
     return render_template('login.html', title='login', form=form)
 
 
@@ -225,7 +293,3 @@ def register():
     print('loading register page')
     return render_template('register.html', title='Register', form=form)
 
-
-@app.route("/", methods=['get'])
-def home():
-    return "home"

@@ -5,6 +5,7 @@ from wtforms.validators import InputRequired
 from flask_wtf.file import FileAllowed
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
+from flask_login import LoginManager
 from app.sql.sql import *
 import eyed3
 import sqlite3
@@ -22,7 +23,7 @@ app.config['ALBUM_COVERS'] = 'album_covers'
 app.config['ROOT_FOLDER'] = os.getcwd() #Where is run.py?
 app.config['DATABASE_FILE'] = 'database/main.db'
 bcrypt = Bcrypt(app)
-
+login_manager = LoginManager(app=app)
 
 from app.forms import *
 from app.db_handler import DB

@@ -1,0 +1,95 @@
+
+{% extends 'base.html' %}
+
+{% if error %}
+    <p class=error><strong>Error:</strong> {{ error }}
+  {% endif %}
+
+{% block content %}
+
+<div class="content-section" data-bs-theme="dark" >
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+
+        <br>
+        <div class="row">
+            <div class="col col-2"></div>
+            <div class="col col-8 rounded-5" style="background-color: rgba(255, 255, 255, 0.4); padding: 20px;">
+                
+                <fieldset class="form-group">
+                    <legend class="border-bottom mb-4">Share your tune! Sign up now.</legend>
+                    
+                    <div class="row">
+                        <div class="col">
+                            <!--  -->
+                            <div class="form-group">
+                                {{ form.email.label(class="form-control-label") }}
+                                {% if form.email.errors %}
+                                    {{ form.email(class="form-control form-control-lg is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.email.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                {{ form.email(class="form-control form-control-lg rounded-5") }}
+                                {% endif %}
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Password row -->
+                    <div class="row">
+                        <div class="col">
+                            <!--  -->
+                            <div class="form-group">
+                                {{ form.password.label(class="form-control-label") }}
+                                {{ form.password(class="form-control form-control-lg rounded-5") }}
+                            </div>
+
+                        </div>
+                        
+                    </div>
+
+                    <div class="row">
+                        
+                            <div class="col" >
+                                <div class="container">
+                            <!--  -->
+                                <div class="row" style="padding-top: 32px;">
+                                    <div class="col">
+                                        <div class="form-group">
+                                            {{ form.remember.label(class="form-control-label") }}
+                                            {{ form.remember(class="form-check-input") }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col">
+                                        <div class="form-group">
+                                            {{ form.submit(class="btn btn-outline-info") }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </fieldset>
+                <div class="row">
+                    <div class="col">
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="col col-2"></div>
+        </div>
+
+
+    </form>
+</div>
+
+
+
+{% endblock %}

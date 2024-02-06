@@ -5,3 +5,4 @@ wtforms
 wtforms.validators
 flask_bcrypt
 email_validator
+flask-login

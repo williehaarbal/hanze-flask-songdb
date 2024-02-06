@@ -5,12 +5,13 @@ from wtforms.validators import InputRequired, DataRequired, Length, Email, Equal
 from flask_wtf.file import FileAllowed
 from werkzeug.utils import secure_filename
 from app.sql.sql import *
+from flask_login import UserMixin
 from app.db_handler import DB
 import eyed3
 import sqlite3
 import uuid
 import os
-
+from app import login_manager
 
 
 class UploadFileForm(FlaskForm):

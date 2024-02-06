@@ -101,3 +101,40 @@ def SQL_GET_HIGHEST_USER_ID() -> str:
     FROM users;
 """
 
+# DEPRICATED
+def SQL_VALIDATE_LOGIN(email: str, password) -> str:
+    return f"""
+    SELECT user_static_id
+    FROM users
+    WHERE email == '{email}' AND password == '{password}';
+
+""".format(email, password)
+
+def SQL_GET_PASSWORD_HASH_FOR_EMAIL(email: str) -> str:
+    return f"""
+    SELECT password
+    FROM users
+    WHERE email == '{email}' AND confirmed_email == 'False';
+""".format(email)
+
+def SQL_GET_USER_STATIC_ID_FOR_EMAIL(email: str) -> str:
+    return f"""
+    SELECT user_static_id
+    FROM users
+    WHERE email == '{email}' AND confirmed_email == 'False';
+""".format(email)
+
+def SQL_GET_USERNAME_FOR_EMAIL(email: str) -> str:
+    return f"""
+    SELECT username
+    FROM users
+    WHERE email == '{email}' AND confirmed_email == 'False';
+""".format(email)
+
+
+def SQL_GET_MOST_BY_USERNAME(username: str) -> str:
+    return f"""
+    SELECT name, email, confirmed_email, loc_profile_pic, country_flag, created_at, user_static_id
+    FROM users
+    WHERE username = '{username}';
+""".format(username)
