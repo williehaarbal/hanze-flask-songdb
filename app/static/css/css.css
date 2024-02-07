@@ -1,5 +1,11 @@
 body {
     background-image: url(../img/bg_dark_1.jpg);
+
+    /* https://cssgradient.io/ */
+    /* background: rgb(2,0,36); */
+    /* background: radial-gradient(circle, rgba(2,0,36,1) 0%, rgba(8,20,27,1) 51%, rgba(37,84,11,1) 100%); */
+
+
     background-color: black;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -30,4 +36,23 @@ background: -webkit-linear-gradient(to right, rgba(132, 250, 176, 1), rgba(143, 
 
 /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 background: linear-gradient(to right, rgba(132, 250, 176, 1), rgba(143, 211, 244, 1))
+}
+
+
+.btn-success, .btn-success:hover, .btn-success:active, .btn-success:visited {
+    background-color: #f05740 !important;
+    border-color: #a33b2b !important;
+}
+
+.btn-outline-success, .btn-outline-success:hover, .btn-outline-success:active, .btn-outline-success:visited {
+    border-color: #a33b2b !important;
+    color: #a33b2b;
+}
+
+.btn-outline-success:hover {
+    background-color: #f05740 !important;
+}
+
+.invalid-feedback {
+    color: black;
 }

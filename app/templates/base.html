@@ -3,24 +3,19 @@
 <head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Document</title>
+
+		<!-- Check for title -->
+		<title>{% if title %} {{ title }} {% else %} MusicDB {% endif %}</title>
+
+		<!-- Custom favicon -->
+		<link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
 		<link rel="stylesheet" href="{{ url_for('static', filename='css/css.css') }}">
 </head>
 <body>
 	<br>
 	<br>
-
-	{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for message in messages %}
-      <li>{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
-
 
 	<div class="container sticky-top">
 		<nav class="navbar bg-body-tertiary rounded-5 navbar-expand-lg" data-bs-theme="dark">
@@ -85,19 +80,55 @@
 
 					<!-- right -->
 					<ul class=" navbar-nav col-lg-3 justify-content-lg-end">
-						<li class="nav-item" style="padding-right: 10px;">
+						<!-- <li class="nav-item" style="padding-right: 10px;">
 							<button type="button" class="btn btn-success rounded-pill">
 								<img src="bootstrap-icons-1.11.3/gear-fill.svg" alt="">
 							</button>
+						</li> -->
+						{% if current_user.is_authenticated %}
+						<!-- What if there us a user logged in -->
+
+
+						<li>
+							<a href="#">
+								<button type="button" class="btn btn-outline-success rounded-0 rounded-start-pill">
+									{{ current_user.username }}
+								</button>
+							</a>
 						</li>
+
+						<li class="nav-item">
+							<div class="btn-group">
+								<button type="button" class="btn btn-success dropdown-toggle rounded-0 rounded-end-pill" data-bs-toggle="dropdown" aria-expanded="false">
+									<img src="{{ url_for('static', filename='img/default_user.jpg') }}" alt="profile picture" class="rounded-5" style="height: 20px; width: 20px; transform: scale(130%);">
+								</button>
+								<span class="visually-hidden">Toggle Dropdown</span>
+								</button>
+								<ul class="dropdown-menu">
+								<li><a class="dropdown-item" href="#">Upload</a></li>
+								<li><hr class="dropdown-divider"></li>
+								<li><a class="dropdown-item" href="#">Upload</a></li>
+								<li><a class="dropdown-item" href="#">Albums</a></li>
+								<li><hr class="dropdown-divider"></li>
+								<li><a class="dropdown-item" href="{{ url_for('logout')}}">Logout</a></li>
+								</ul>
+							</div>
+						</li>
+
+						{% else %}
+						<!-- No user logged in -->
 						<li class="nav-item">
 							<a href="{{ url_for('register') }}">
 								<button type="button" class="btn btn-success rounded-start-pill">SIGN UP</button>
 							</a>
 						</li>
 						<li class="nav-item">
-							<button type="button" class="btn btn btn-outline-success rounded-end-pill">SIGN IN</button>
+							<a href="{{ url_for('login') }}">
+								<button type="button" class="btn btn btn-outline-success rounded-end-pill">SIGN IN</button>
+							</a>
 						</li>
+
+						{% endif %}
 					</ul>
 				</div>
 			</div>
@@ -107,10 +138,28 @@
 
 		<div class="container">
 			{% block content %}
-			
+
+
 			{% endblock %}
 		</div>
 
-		<script src="js/bootstrap.bundle.js"></script>
+	<!-- Flash messages on bottom of page -->
+	{% with messages = get_flashed_messages() %}
+	{% if messages %}
+	<div class="position-absolute bottom-0 start-50 translate-middle">
+		<div class="cointainer">
+
+			{% for message in messages %}
+			<div class="alert alert-warning alert-dismissible fade show" role="alert">
+				{{ message }}
+				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+			</div>
+			{% endfor %}
+		</div>
+	</div>
+	{% endif %}
+	{% endwith %}
+
+	<script src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}"></script>
 </body>
 </html>

@@ -1,3 +1,79 @@
+# CHECKED
+# EMAIL -> BOOLEAN
+def SQL_EMAIL_EXISTS(email: str) -> str:
+    return """
+SELECT
+    CASE WHEN EXISTS 
+    (
+        SELECT * FROM users 
+        WHERE lower(email) == lower('%s')
+    )
+    THEN 'True'
+    ELSE 'False'
+    END;
+    """.format(email)
+
+# CHECKED
+# USERNAME -> BOOLEAN
+def SQL_USERNAME_EXISTS(username: str) -> str:
+    return """
+SELECT
+    CASE WHEN EXISTS 
+    (
+        SELECT * FROM users 
+        WHERE lower(username) == lower('%s')
+    )
+    THEN 'True'
+    ELSE 'False'
+    END;
+    """.format(username)
+
+# CHECKED
+# USER_STATIC_ID -> BOOLEAN
+def SQL_USER_STATIC_ID_EXISTS(user_static_id: str) -> str:
+    return """
+SELECT
+    CASE WHEN EXISTS 
+    (
+        SELECT * FROM users 
+        WHERE lower(user_static_id) == lower('%s')
+    )
+    THEN 'True'
+    ELSE 'False'
+    END;
+    """.format(user_static_id)
+
+# CHECKED
+# INSERT NEW USER
+def SQL_INSERT_NEW_USER(user_static_id, name: str, username: str, password: str, crypt_method: str, email: str, confirmed_email: str, loc_profile_pic: str, country_flag: str, admin: str, active: str) -> str:
+    return f"""
+INSERT INTO users(user_static_id, name, username, password, crypt_method, email, confirmed_email, loc_profile_pic, country_flag, admin, active, created_at)
+VALUES(
+    '{user_static_id}',
+    '{name}',
+    '{username}',
+    '{password}',
+    '{crypt_method}',
+    '{email}',
+    '{confirmed_email}',
+    '{loc_profile_pic}',
+    '{country_flag}',
+    '{admin}',
+    '{active}',
+    datetime('now')
+);
+"""
+
+
+def SQL_GET_HIGHEST_USER_ID() -> str:
+    return f"""
+    SELECT max(user_static_id)
+    FROM users;
+"""
+
+
+
+
 def SQL_INSERT_INTO_SONG(song_name: str, artist: str, album: str, extention: str, song_length: int, path_album_image: str, path_file: str, upload_session: int) -> str:
     return f"""
     INSERT INTO songs(
@@ -44,26 +120,6 @@ def SQL_CHANGE_ELEMENT_BY_ID(id: int, what: str, value: str) -> str:
 
 """
 
-def SQL_INSERT_NEW_USER(user_static_id, name: str, username: str, password: str, crypt_method: str, email: str, confirmed_email: str, loc_profile_pic: str, country_flag: str, admin: str, active: str) -> str:
-    return f"""
-
-INSERT INTO users(user_static_id, name, username, password, crypt_method, email, confirmed_email, loc_profile_pic, country_flag, admin, active, created_at)
-VALUES(
-'{user_static_id}',
-'{name}',
-'{username}',
-'{password}',
-'{crypt_method}',
-'{email}',
-'{confirmed_email}',
-'{loc_profile_pic}',
-'{country_flag}',
-'{admin}',
-'{active}',
-datetime('now')
-);
-
-""".format(user_static_id, name, username, password, crypt_method, email, confirmed_email, loc_profile_pic, country_flag, admin, active)
 
 
 
@@ -81,25 +137,7 @@ SELECT
     END;
     """.format(username = username)
 
-# CHECKED
-def SQL_CONFIRMED_EMAIL_EXISTS(email: str) -> str:
-    return f"""
-SELECT
-    CASE WHEN EXISTS 
-    (
-        SELECT * FROM users 
-        WHERE lower(email) == lower('{email}') AND confirmed_email == 'True'
-    )
-    THEN 'True'
-    ELSE 'False'
-    END;
-    """.format(email = email)
 
-def SQL_GET_HIGHEST_USER_ID() -> str:
-    return f"""
-    SELECT max(user_static_id)
-    FROM users;
-"""
 
 # DEPRICATED
 def SQL_VALIDATE_LOGIN(email: str, password) -> str:
@@ -132,9 +170,9 @@ def SQL_GET_USERNAME_FOR_EMAIL(email: str) -> str:
 """.format(email)
 
 
-def SQL_GET_MOST_BY_USERNAME(username: str) -> str:
+def SQL_GET_MOST_BY_USER_STATIC_ID(user_static_id: str) -> str:
     return f"""
-    SELECT name, email, confirmed_email, loc_profile_pic, country_flag, created_at, user_static_id
+    SELECT name, username, email, confirmed_email, loc_profile_pic, country_flag, created_at, user_static_id
     FROM users
-    WHERE username = '{username}';
-""".format(username)
+    WHERE user_static_id = '{user_static_id}';
+""".format(user_static_id)

@@ -6,9 +6,11 @@ from flask_wtf.file import FileAllowed
 from flask_login import login_user, current_user
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
+import flask_login
 from app.sql.sql import *
 import eyed3
 import logging
+import time
 import sqlite3
 import uuid
 import pathlib
@@ -17,31 +19,54 @@ import os
 from app.models import User
 from app.forms import *
 from app.db_handler import DB
-
 from app import app
 from app import bcrypt
 
-
-@app.route('/log')
-def log():
-    print('Log page')
-
-    user = User('1', 'William')
-
-
-    print(f'Before: {login_user}')
-    login_user(user)
-    print(f'After: {login_user}')
-
-
-    return redirect(url_for('home'))
-
+# Fontpage of website
 @app.route('/')
 def home():
-    print('Home page')
-    print(current_user)
-    print(current_user)
-    return "You're home."
+     # For each page
+    title = 'MusicDB :: home'
+    error = None
+
+
+    # flash('You were successfully logged in')
+    # flash('You were successfully logged in')
+    # flash('You were successfully logged in')
+    # flash('You were successfully logged in')
+
+
+    print(f'What is user_login in home {current_user}')
+    # print(current_user.is_authenticated)
+    # print(current_user.user_static_id)
+    # print(current_user.name)
+    # print(error)
+    # print(title)
+
+    return render_template('home.html', title=title, error=error)
+
+@app.route('/test')
+def test():
+     # For each page
+    title = 'MusicDB :: home'
+    error = None
+    return 'hi'
+
+
+@app.route('/logout')
+def logout():
+     # For each page
+    title = 'MusicDB :: Logout'
+    time.sleep(2)
+    error = None
+    flask_login.logout_user()
+
+    return redirect(url_for('login'))
+
+
+
+
+
 
 
 
@@ -184,112 +209,59 @@ def upload(session):
 # ROUTE WITH ALL SONGS
 
 
+
+
+
+
 @app.route("/login", methods=['GET', 'POST'])
 def login():
+    # For each page
+    error = None
+    title = 'MusicDB :: Sign In'
+
+
     form = LoginForm()
 
     if form.validate_on_submit():
-
-        print(f'T2: {form.password.data} ')
-        
         used_email = form.email.data
         used_pw = form.password.data
         username = None
 
         # We get the hashed password for that email
-        db = DB()
+        db = DB('main.db')
         db.exe(SQL_GET_PASSWORD_HASH_FOR_EMAIL(used_email))
-        hashed_password = db.fall()[0][0]
+        hashed_password = db.f_all()[0][0]
         db.close()
-
-        print(f'T1: {hashed_password} ')
 
         if (bcrypt.check_password_hash(hashed_password, used_pw)):
             print('Right password!')
-            db = DB()
-            db.exe(SQL_GET_USERNAME_FOR_EMAIL(used_email))
-            username = db.fall()[0][0]
-            current = User(username)
-            william_current_user = current
 
-            print(current)
+
+            db = DB('main.db')
+            db.exe(SQL_GET_USER_STATIC_ID_FOR_EMAIL(used_email))
+            user_static_id = db.f_all()[0][0]
+            print(user_static_id)
+
+            current = User(str(user_static_id))
+
+            # WHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHYYYYY
+            login_user(current, force=True, remember=True)
+
+            print(f'Object current User: {current_user}')
+            print(f'name current User: {current_user.name}')
+            print(f'static_user_id current User: {current_user.user_static_id}')
+
+            print(f'Net na login_user {login_user}')
             print(type(current))
-            print('login succesfull?')
-            print(login_user(user=current, remember=True, force=True))
-
-            print(current)
-            print(type(current))
-
-            return redirect(url_for('home'))
+            
+            #validate redirect
+            next = request.args.get('next')
+            return redirect(next) if next else redirect(url_for('home'))
         else:
             print('Wrong password!')
 
-        # flash('Login')
+        flash('Login')
             
         
 
     return render_template('login.html', title='login', form=form)
-
-
-
-@app.route("/register", methods=['GET', 'POST'])
-def register():
-    error = None
-    form = RegistrationForm()
-    print(form.validate_on_submit())
-    if form.validate_on_submit():
-
-        db = DB()
-
-        # Username
-        wanted_username = form.username.data
-        db.exe(SQL_USERNAME_EXISTS(wanted_username))
-        answer = db.fall()[0][0]
-        if answer == "True":
-            error.append('Username already in use!')
-            print('Username already in use!')
-        
-        # Email
-        wanted_email = form.email.data
-        db.exe(SQL_CONFIRMED_EMAIL_EXISTS(wanted_email))
-        answer = db.fall()[0][0]
-        if answer == "True":
-            error.append('Email already in use!')
-
-        confirmed_email = 'False'
-        
-        # Password
-        print(f"HASHED {form.password.data}")
-        from app import bcrypt
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        crypt_method = 'bcrypt 1.0.1'
-
-        # User_statid_id
-        db.exe(SQL_GET_HIGHEST_USER_ID())
-        answer = db.fall()[0][0]
-        real_number = int(answer)
-        user_static_id = real_number + 1
-
-        # Name
-        wanted_name = form.name.data
-
-        # Country flag
-        wanted_country_flag = form.country_flag.data
-
-        # Image
-        loc_profile_pic = 'default.png'
-
-        # Admin
-        admin = 'False'
-
-
-        db.exe(SQL_INSERT_NEW_USER(user_static_id, wanted_name, wanted_username, hashed_password, crypt_method, wanted_email, confirmed_email, loc_profile_pic, wanted_country_flag, 'False', 'True'))
-        db.commit()
-        db.close()
-        print('Tried adding user')
-        return redirect('/',code=302)
-
-
-    print('loading register page')
-    return render_template('register.html', title='Register', form=form)
-

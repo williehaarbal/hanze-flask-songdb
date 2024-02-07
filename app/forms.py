@@ -26,30 +26,32 @@ class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=20)])
     country_flag = SelectField(label='Country', choices=([country for country in countries]), validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    password = PasswordField('Password', validators=[])
+    confirm_password = PasswordField('Confirm Password', validators=[EqualTo('password')])
+    # password = PasswordField('Password', validators=[DataRequired()])
+    # confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     stay_signed_in = BooleanField(label='Stay signed in')
     submit = SubmitField('Sign Up')
 
-    def validate_username(self, username):
-        db = DB()
-        db.exe(SQL_USERNAME_EXISTS(username.data))
-        answer = db.fall()[0][0]
-        db.close()
-        if answer == 'True':
-            raise ValidationError('That username is taken. Please choose a different one.')
+    # def validate_username(self, username):
+    #     db = DB()
+    #     db.exe(SQL_USERNAME_EXISTS(username.data))
+    #     answer = db.fall()[0][0]
+    #     db.close()
+    #     if answer == 'True':
+    #         raise ValidationError('That username is taken. Please choose a different one.')
 
-    def validate_email(self, email):
-        db = DB()
-        db.exe(SQL_CONFIRMED_EMAIL_EXISTS(email.data))
-        answer = db.fall()[0][0]
-        db.close()
-        if answer == 'True':
-            raise ValidationError('That email is taken. Please choose a different one.')
+    # def validate_email(self, email):
+    #     db = DB()
+    #     db.exe(SQL_CONFIRMED_EMAIL_EXISTS(email.data))
+    #     answer = db.fall()[0][0]
+    #     db.close()
+    #     if answer == 'True':
+    #         raise ValidationError('That email is taken. Please choose a different one.')
     
-    def validate_country_flag(self, country_flag):
-        if country_flag.data == 'Please select country':
-            raise ValidationError('Please select a country')
+    # def validate_country_flag(self, country_flag):
+    #     if country_flag.data == 'Please select country':
+    #         raise ValidationError('Please select a country')
 
   
 class LoginForm(FlaskForm):
