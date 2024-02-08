@@ -24,3 +24,5 @@ todo.txt
 # Some other weird stuff
 app/__pycache__/
 app/sql/__pycache__/
+
+code.txt
