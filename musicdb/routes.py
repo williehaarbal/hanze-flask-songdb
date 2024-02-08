@@ -1,4 +1,4 @@
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, send_from_directory
 from musicdb import app, bcrypt, db
 from musicdb.forms import RegistrationForm, LoginForm, UploadForm
 from musicdb.models import User, Song
@@ -101,11 +101,29 @@ def upload():
             uploaded_files.append(filename_with_uuid)
 
             # Get meta data of song
-            meta_file = eyed3.load(path_and_file)
-            meta_title = meta_file.tag.title
-            meta_artist = meta_file.tag.artist
-            meta_album = meta_file.tag.album
-            meta_duration_in_sec = meta_file.info.time_secs
+
+            meta_title = 'unknown title'
+            meta_artist = 'unknown artist'
+            meta_album = 'unknown album'
+            meta_duration_in_sec = -1
+
+            try: 
+                meta_file = eyed3.load(path_and_file)
+                if meta_file.tag is None:
+                    raise Exception("No tag was found to retrieve metadata")
+                if meta_file.tag:
+                    meta_title = meta_file.tag.title
+                    meta_artist = meta_file.tag.artist
+                    meta_album = meta_file.tag.album
+
+                if meta_file.info is None:
+                    raise(Exception('No info was found for this file. Is it broken?'))
+                meta_duration_in_sec = meta_file.info.time_secs
+                
+            except Exception as e:
+                print(f"Failed opening file with eye3d: {e}")
+                
+
             meta_image = None
             for image in meta_file.tag.images:
                 # Check if image already exists, else we store it
@@ -180,3 +198,35 @@ def songs():
     songlist = Song.query.all()
 
     return render_template('songs.html', songlist=songlist)
+
+
+from flask import send_from_directory
+
+@app.route('/icon')
+def send_report():
+    url_for
+    return render_template('test.html')
+
+
+@app.route('/me')
+def profile_me():
+    if not current_user.is_authenticated:
+        flash("You shouldn't be on this page without being loged in!")
+        return redirect(url_for('login'))
+    
+    return render_template('me.html')
+
+
+# STATIC DATA :: SONGS ICONS
+# CDN path is what user sees in browser!
+@app.route('/cdn/i/<path:filename>')
+def cdn_icons(filename):
+    return send_from_directory(app.config['SONG_COVERS_ICON'], filename)
+
+
+# STATIC DATA :: SONGS
+# CDN path is what user sees in browser!
+@app.route('/cdn/s/<path:filename>')
+def cdn_songs(filename):
+    return send_from_directory(app.config['SONG_FOLDER'], filename)
+

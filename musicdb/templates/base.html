@@ -1,17 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	{% block head %}
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-		<!-- Check for title -->
-		<title>{% if title %} {{ title }} {% else %} MusicDB {% endif %}</title>
+	<!-- Check for title -->
+	<title>{% if title %} {{ title }} {% else %} MusicDB {% endif %}</title>
 
-		<!-- Custom favicon -->
-		<link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+	<!-- Custom favicon -->
+	<link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
 
-		<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
-		<link rel="stylesheet" href="{{ url_for('static', filename='css/css.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/css.css') }}">
+	<!-- # Open Sans -->
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+	
+	{% endblock %}
 </head>
 <body>
 	<br>

@@ -21,6 +21,8 @@ print(os.path.join(root_folder, 'database', 'main.db'))
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///main.db"
 app.config['DATA_FOLDER'] = os.path.join(os.getcwd(), 'data')
 app.config['TEMP_FOLDER'] = os.path.join(os.getcwd(), 'data', 'temp')
+app.config['SONG_FOLDER'] = os.path.join(os.getcwd(), 'data', 'songs')
+app.config['SONG_COVERS_ICON'] = os.path.join(os.getcwd(), 'data', 'songs_covers_icon')
 
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
