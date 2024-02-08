@@ -1,9 +1,9 @@
 # TODO: More countries?
 
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, StringField, PasswordField, BooleanField, SelectField
-from wtforms.validators import DataRequired, Length, Email, EqualTo
-
+from wtforms import MultipleFileField, SubmitField, StringField, PasswordField, BooleanField, SelectField
+from wtforms.validators import DataRequired, Length, Email, EqualTo, InputRequired
+from flask_wtf.file import FileAllowed
 
 
 
@@ -18,11 +18,14 @@ class RegistrationForm(FlaskForm):
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     stay_signed_in = BooleanField(label='Stay signed in')
     submit = SubmitField('Sign Up')
-
-
   
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
+
+class UploadForm(FlaskForm):
+    files = MultipleFileField("Files", validators=[InputRequired(), FileAllowed(['mp3'])])
+    submit = SubmitField("Upload file")
+

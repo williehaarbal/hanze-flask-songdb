@@ -38,11 +38,11 @@
 								<span class="visually-hidden">Toggle Dropdown</span>
 								</button>
 								<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="#">Upload</a></li>
-								<li><hr class="dropdown-divider"></li>
-								<li><a class="dropdown-item" href="#">Upload</a></li>
+								<li><a class="dropdown-item" href="{{ url_for('songs') }}">Songs</a></li>
 								<li><a class="dropdown-item" href="#">Albums</a></li>
 								<li><a class="dropdown-item" href="#">Artists</a></li>
+								<li><hr class="dropdown-divider"></li>
+								<li><a class="dropdown-item" href="{{ url_for('upload') }}">Upload</a></li>
 								</ul>
 							</div>
 						</li>

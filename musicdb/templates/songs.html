@@ -1,0 +1,27 @@
+<!-- What to extend, it this case, our base template -->
+{% extends "base.html" %}
+
+<!-- Extra markup that goes in <head> -->
+{% block head %}
+{% endblock %}
+
+<!-- Homepage content -->
+{% block content %}
+
+<h1>Songs</h1>
+{{ current_user }}
+
+{% for song in songlist %}
+
+<div class="row rounded-4" style="background-color: rgba(255, 255, 255, 0.4); padding: 3px;">
+    <div class="col">{{ song.title }}</div>
+    <div class="col">{{ song.album }}</div>
+    <div class="col">{{ song.artist }}</div>
+    <div class="col">{{ song.length_in_sec }}</div>
+    <div class="col">{{ song.extension }}</div>
+
+</div>
+
+{% endfor %}
+
+{% endblock %}
