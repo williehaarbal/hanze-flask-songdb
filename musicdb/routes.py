@@ -1,15 +1,17 @@
 from flask import render_template, url_for, flash, redirect, request, send_from_directory
 from musicdb import app, bcrypt, db
-from musicdb.forms import RegistrationForm, LoginForm, UploadForm
+from musicdb.forms import RegistrationForm, LoginForm, UpdateAccount, UpdatePicture, UploadForm, UpdateAuth, DeleteAccount
 from musicdb.models import User, Song
 from flask_login import login_user, current_user, logout_user, login_required
 from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
 import uuid
 from flask import Flask, render_template, redirect, url_for, request, flash
 from flask_wtf import FlaskForm
 from wtforms import FileField, MultipleFileField, SubmitField
 from wtforms.validators import InputRequired
 from flask_wtf.file import FileAllowed
+import copy
 from flask_login import login_user, current_user
 from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
@@ -208,14 +210,6 @@ def send_report():
     return render_template('test.html')
 
 
-@app.route('/me')
-def profile_me():
-    if not current_user.is_authenticated:
-        flash("You shouldn't be on this page without being loged in!")
-        return redirect(url_for('login'))
-    
-    return render_template('me.html')
-
 
 # STATIC DATA :: SONGS ICONS
 # CDN path is what user sees in browser!
@@ -230,3 +224,96 @@ def cdn_icons(filename):
 def cdn_songs(filename):
     return send_from_directory(app.config['SONG_FOLDER'], filename)
 
+# STATIC DATA :: SONGS
+# CDN path is what user sees in browser!
+@app.route('/cdn/pp/<path:filename>')
+def cdn_profile_picture(filename):
+    return send_from_directory(app.config['PROFILE_PICTURE'], filename)
+
+@app.route('/account', methods=['GET', 'POST'])
+def account():
+
+    if not current_user.is_authenticated:
+        flash("You shouldn't be on this page without being loged in!")
+        return redirect(url_for('login'))
+    
+    updatePicture = UpdatePicture()
+    updateAccount = UpdateAccount(name=current_user.name, country_flag=current_user.country, about_me=current_user.about_me)
+    updateAuth = UpdateAuth(email=current_user.email, username=current_user.username)
+    deleteAccount = DeleteAccount()
+
+    print(f'REQUEST: {request.form}')
+    if "current_password" in request.form:
+        print('PASS')
+    
+
+
+    if updateAccount.submit_updateaccount.data and updateAccount.validate_on_submit():
+        print('Trigger ACCOUNT')
+        current_user.about_me = updateAccount.about_me.data
+        current_user.country_flag = updateAccount.country_flag.data
+        current_user.name = updateAccount.name.data
+        db.session.commit()
+
+
+    if updateAuth.submit_updateauth.data or updateAuth.validate_on_submit():
+        print('Trigger AUTH')
+        if bcrypt.check_password_hash(current_user.password, updateAuth.current_password.data):
+            current_user.username = updateAuth.username.data
+            current_user.email = updateAuth.email.data
+            db.session.commit()
+            return render_template('account.html', updateAccount=updateAccount, updateAuth=updateAuth, deleteAccount=deleteAccount, updatePicture=updatePicture)
+
+    # Image updating
+    if updatePicture.validate_on_submit() and updatePicture.picture.data:
+        print('Trigger PICTURE')
+        # https://flask-wtf.readthedocs.io/en/latest/form/#module-flask_wtf.file
+
+        # Store the file in tempfolder so we can modify it
+        f = updatePicture.picture.data
+        filename = secure_filename(f.filename)
+        temp = os.path.join(app.config['TEMP_FOLDER'], filename)
+        f.save(temp)
+        extension = filename.split('.').pop().lower()
+
+        # Crop and resize to 512, 512
+        image = Image.open(temp)
+
+        # https://note.nkmk.me/en/python-pillow-square-circle-thumbnail/
+        def crop_center(pil_img, crop_width, crop_height):
+            img_width, img_height = pil_img.size
+            return pil_img.crop(((img_width - crop_width) // 2,
+                         (img_height - crop_height) // 2,
+                         (img_width + crop_width) // 2,
+                         (img_height + crop_height) // 2))
+        
+        def crop_max_square(pil_img):
+            return crop_center(pil_img, min(pil_img.size), min(pil_img.size))
+        
+        image_cropped = crop_center(image, 512, 512)
+
+
+        # image_to_resize = Image.open(temp)
+        # icon = image_to_resize.resize((512, 512))
+        image_cropped.save(temp)
+
+    
+        md5 = hashlib.md5(open(temp, 'rb').read()).hexdigest()
+
+        md5_and_extention = f'{md5}.{extension}'
+        persistent = os.path.join(os.path.join(app.config['PROFILE_PICTURE'], md5_and_extention))
+
+        try:
+            os.rename(temp, persistent)
+        except Exception as e:
+            os.remove(temp)
+            print(e)
+
+        current_user.profile_picture = md5_and_extention
+        db.session.commit()
+
+
+
+
+    
+    return render_template('account.html', updateAccount=updateAccount, updateAuth=updateAuth, deleteAccount=deleteAccount, updatePicture=updatePicture)

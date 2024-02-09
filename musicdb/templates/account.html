@@ -1,0 +1,233 @@
+<!-- What to extend, it this case, our base template -->
+{% extends "base.html" %}
+
+<!-- Extra markup that goes in <head> -->
+{% block head %}
+{{ super() }}
+<style type="text/css">
+.grid-container {
+    display: grid;
+
+    width: 100%;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+
+    color: rgba(255, 255, 255, 1);
+
+    border-radius: 15px;
+    overflow: hidden;
+    font-family: 'Open Sans', sans-serif;
+
+}
+
+.grid-content {
+    background-color: rgba(255, 255, 255, 0.4);
+    margin: 6px;
+    padding: 10px;
+    border-radius: 20px;
+}
+
+.grid-content-left {
+
+}
+
+.grid-content-middle {
+    
+}
+
+.grid-content-right {
+    
+}
+
+.file-text-hidden {
+    
+}
+
+.grid-content-header {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 700;
+    font-family: 'Open Sans', sans-serif;
+    text-align: center;
+    font-size: 3rem;
+    background-color: #2b3035;
+    margin: -10px;
+    margin-bottom: 20px;
+    border-radius: 20px 20px 0px 0px;
+}
+
+textarea {
+  resize: none;
+  overflow: hidden;
+  min-height: 200px;
+  max-height: 600px;
+}
+
+hr {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, 1);
+}
+
+.submit-button {
+    padding-top: 20px;
+    padding-bottom: 20px;
+    width: 100%;
+    text-align: center;
+}
+
+</style>
+{% endblock %}
+
+<!-- Homepage content -->
+{% block content %}
+
+<br>
+{{ current_user.profile_picture  }}
+<br>
+
+<div class="grid-container">
+    <!-- LEFT CHILD :: EDIT PROFILE -->
+    <div class="grid-content grid-content-left">
+
+        <div class="grid-content-header">
+            Account
+        </div>
+
+        <!-- Profile picture -->
+        <form method="POST" action="">
+            {{ updatePicture.hidden_tag() }}
+            <div class="rounded-circle" style="overflow: hidden; margin: 30px;">
+                {% if current_user.profile_picture == 'default.jpg' %}
+                <img src="{{ url_for('static', filename='img/default.jpg') }}" alt="default profile picture" style="width: 100%;">
+                {% else %}
+                <img src="{{ url_for('cdn_profile_picture', filename=current_user.profile_picture) }}" alt="profile picture" style="width: 100%;">
+                {% endif %}
+            </div>
+        </form>
+
+        <!-- Form for updating picture -->
+        <form method="POST" action="" enctype="multipart/form-data">
+            {{ updatePicture.hidden_tag() }}
+            <fieldset class="form-group">
+                <div class="form-group">
+                    {{ updatePicture.picture(class="form-control form-control-lg rounded-5", id="updatepicture", **{"onchange":"this.form.submit()"}) }}
+                </div>
+            </fieldset>
+        </form>
+
+        <!-- Form for updating profile -->
+
+        <br>
+
+        <form method="POST" action="" enctype="multipart/form-data">
+            {{ updateAccount.hidden_tag() }}
+            <fieldset class="form-group">
+                <div class="form-group">
+                    {{ updateAccount.name.label(class="form-control-label" ) }}
+                    {{ updateAccount.name(class="form-control form-control-lg rounded-5")}}
+                </div>
+                <div class="form-group">
+                    {{ updateAccount.country_flag.label(class="form-control-label" ) }}
+                    {{ updateAccount.country_flag(class="form-control form-control-lg rounded-5") }}
+                </div>
+                <div class="form-group">
+                    {{ updateAccount.about_me.label(class="form-control-label") }}
+                    {{ updateAccount.about_me(class="form-control form-control-lg rounded-5", **{"oninput":"auto_grow(this)"}) }}
+                </div>
+            </fieldset>
+            <div class="submit-button">
+                {{ updateAccount.submit_updateaccount(class="btn btn-success") }}
+            </div>
+        </form>
+
+
+    </div>
+    <!-- MIDDLE CHILD :: AUTH -->
+
+    
+
+    <div class="grid-content grid-content-middle">
+
+        <div class="grid-content-header">
+            Auth
+        </div>
+
+        <form method="POST" action="" enctype="multipart/form-data">
+            {{ updateAuth.hidden_tag() }}
+            <fieldset class="form-group">
+                <div class="form-group">
+                    {{ updateAuth.email.label(class="form-control-label" ) }}
+                    {{ updateAuth.email(class="form-control form-control-lg rounded-5") }}
+                </div>
+                <div class="form-group">
+                    {{ updateAuth.username.label(class="form-control-label" ) }}
+                    {{ updateAuth.username(class="form-control form-control-lg rounded-5") }}
+                </div>
+
+                <hr>
+
+                <div class="form-group">
+                    {{ updateAuth.new_password.label(class="form-control-label" ) }}
+                    {{ updateAuth.new_password(class="form-control form-control-lg rounded-5") }}
+                </div>
+                <div class="form-group">
+                    {{ updateAuth.confirm_password.label(class="form-control-label") }}
+                    {{ updateAuth.confirm_password(class="form-control form-control-lg rounded-5", **{"oninput":"auto_grow(this)"}) }}
+                </div>
+
+                <hr>
+
+                <div class="form-group">
+                    {{ updateAuth.current_password.label(class="form-control-label") }}
+                    {{ updateAuth.current_password(class="form-control form-control-lg rounded-5", **{"oninput":"auto_grow(this)"}) }}
+                </div>
+            </fieldset>
+            <div class="submit-button">
+                {{ updateAuth.submit_updateauth(class="btn btn-success") }}
+            </div>
+        </form>
+
+    </div>
+    <!-- RIGHT CHILD :: DELETE / OTHER -->
+    <div class="grid-content grid-content-right">
+
+        <div class="grid-content-header">
+            Delete
+        </div>
+
+        <form method="POST" action="">
+            {{ deleteAccount.hidden_tag() }}
+            <fieldset class="form-group">
+                <div class="form-group">
+                    {{ deleteAccount.password.label(class="form-control-label" ) }}
+                    {{ deleteAccount.password(class="form-control form-control-lg rounded-5") }}
+                </div>
+                <div class="form-group">
+                    {{ deleteAccount.delete.label(class="form-control-label" ) }}
+                    {{ deleteAccount.delete(class="form-control form-control-lg rounded-5") }}
+                </div>
+            </fieldset>
+            <div class="submit-button">
+                {{ deleteAccount.submit_deleteaccount(class="btn btn-danger") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+<br>
+<br>
+<br>
+<br>
+
+<script>
+    function auto_grow(element) {
+    element.style.height = "5px";
+    element.style.height = (element.scrollHeight) + "px";
+}
+</script>
+
+{% endblock %}
+
+
+{{ form.name }}

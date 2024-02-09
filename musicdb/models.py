@@ -37,6 +37,7 @@ class User(db.Model, UserMixin):
     profile_picture: Mapped[str] = mapped_column(String(100), default='default.jpg')
     country: Mapped[str] = mapped_column(String(20), default='world')
     password: Mapped[str] = mapped_column(String(255), nullable=False)
+    about_me: Mapped[str] = mapped_column(String(2000), nullable=True)
     password_crypt_method: Mapped[str] = mapped_column(String(50), nullable=False, default='bcrypt')
     admin: Mapped[bool] = mapped_column(Boolean, default=False)
     alive: Mapped[bool] = mapped_column(Boolean, default=True)
@@ -50,6 +51,8 @@ class User(db.Model, UserMixin):
     @property
     def is_authenticated(self):
         return self.is_active
+    
+
     
 class Song(db.Model):
     __tablename__ = 'Songs'

@@ -109,7 +109,11 @@
 						<li class="nav-item">
 							<div class="btn-group">
 								<button type="button" class="btn btn-success dropdown-toggle rounded-0 rounded-end-pill" data-bs-toggle="dropdown" aria-expanded="false">
+									{% if current_user.profile_picture == 'default.jpg' %}
 									<img src="{{ url_for('static', filename='img/default_user.jpg') }}" alt="profile picture" class="rounded-5" style="height: 20px; width: 20px; transform: scale(130%);">
+									{% else %}
+									<img src="{{ url_for('cdn_profile_picture', filename=current_user.profile_picture) }}" alt="profile picture" class="rounded-5" style="height: 20px; width: 20px; transform: scale(130%);">
+									{% endif %}
 								</button>
 								<span class="visually-hidden">Toggle Dropdown</span>
 								</button>
@@ -117,7 +121,7 @@
 								<li><a class="dropdown-item" href="#">Upload</a></li>
 								<li><hr class="dropdown-divider"></li>
 								<li><a class="dropdown-item" href="#">Upload</a></li>
-								<li><a class="dropdown-item" href="#">Albums</a></li>
+								<li><a class="dropdown-item" href="{{ url_for('account') }}">Account</a></li>
 								<li><hr class="dropdown-divider"></li>
 								<li><a class="dropdown-item" href="{{ url_for('logout')}}">Logout</a></li>
 								</ul>
