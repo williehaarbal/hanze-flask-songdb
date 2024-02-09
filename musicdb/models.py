@@ -1,10 +1,13 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 from flask_login import UserMixin
-from sqlalchemy import String, Integer, Boolean, DateTime, ForeignKey
+from sqlalchemy import Column, String, Integer, Boolean, DateTime, ForeignKey, Table
 from datetime import datetime
 from musicdb import login_manager, db
 from typing import List
 
+
+# DO NOT TOUCH. IT WORKS NOW.
+# KEEPS EXPLODING WHEN I LOOK AT IT.
 @login_manager.user_loader
 def load_user(user_id):
     if user_id == '':
@@ -13,81 +16,139 @@ def load_user(user_id):
         return None
     return User.query.get(int(user_id))
 
-# Backup this works kinda
-# @login_manager.user_loader
-# def load_user(user_id):
-#     print(f'HELP: {user_id}')
-#     if user_id is '':
-#         return None
-#     if User.query.get(int(user_id)) == None:
-#         return None
-#     return User.query.get(int(user_id))
 
-
-
-
-class User(db.Model, UserMixin):
-    __tablename__ = 'users'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    static_id: Mapped[int] = mapped_column(Integer, default=0)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    username: Mapped[str] = mapped_column(String(20), unique=True, nullable=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
-    email_confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
-    profile_picture: Mapped[str] = mapped_column(String(100), default='default.jpg')
-    country: Mapped[str] = mapped_column(String(20), default='world')
-    password: Mapped[str] = mapped_column(String(255), nullable=False)
-    about_me: Mapped[str] = mapped_column(String(2000), nullable=True)
-    password_crypt_method: Mapped[str] = mapped_column(String(50), nullable=False, default='bcrypt')
-    admin: Mapped[bool] = mapped_column(Boolean, default=False)
-    alive: Mapped[bool] = mapped_column(Boolean, default=True)
-    created_at: Mapped[str] = mapped_column(DateTime, nullable=False, default=datetime.now())
-
-    # songs: Mapped[List["Song"]] = relationship(back_populates="user")
-
-    def __repr__(self):
-        return f"User :: ('{self.static_id}' '{self.username}', '{self.email}')"
-
-    @property
-    def is_authenticated(self):
-        return self.is_active
-    
-
-    
 class Song(db.Model):
-    __tablename__ = 'Songs'
-    # Main DB identifiers
+    __tablename__ = 'song'
+    # Main DB identifier
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    static_id: Mapped[int] = mapped_column(Integer, default=0)
 
     # Base information
-    title: Mapped[str] = mapped_column(String(100), nullable=False)
-    artist: Mapped[str] = mapped_column(String(100), nullable=True)
-    album: Mapped[str] = mapped_column(String(100), nullable=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False, default="<unknown title>")
+    # album (foreign key)
+    # artist (foreign key)
 
-    # Meta data
+    # Metadata
     length_in_sec: Mapped[int] = mapped_column(Integer, default=-1)
     extension: Mapped[str] = mapped_column(String(10), nullable=True)
 
     # Files
-    # Stores name of the file+ext of where to find the uploaded file ondisk (data/songs)
     file_name: Mapped[str] = mapped_column(String(255), nullable=True)
-    # Stores name if the file+ext of where a short clip can be found of the original file (data/shorts)
-    file_shorts: Mapped[str] = mapped_column(String(255), nullable=True)
-    # Stores the BIG/ORIG image of the orignal file, if it had any. Is md5+ext (data/songs_covers)
-    # Also a small icon will be available in (data/songs_covers_icon) (128x128)
     file_cover: Mapped[str] = mapped_column(String(255), nullable=True)
 
     # Info about file creation
+    # user (aka uploader) (foreign key)
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False, default=datetime.now())
     upload_session: Mapped[str] = mapped_column(String(255), nullable=True)
     moved_to_songs: Mapped[bool] = mapped_column(Boolean, default=False)
     alive: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    uploader: Mapped[str] = mapped_column(String(100), nullable=True)
 
-    # user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    # user: Mapped["User"] = relationship(back_populates="songs")
+    # RELATIONSHIPS
+
+    # N songs -> 1 uploader
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=True)
+    user: Mapped["User"] = relationship(back_populates="song")
+
+    # N songs -> 1 album
+    album_id: Mapped[int] = mapped_column(ForeignKey("album.id"), nullable=True)
+    album: Mapped["Album"] = relationship(back_populates="song")
+
+    # N songs -> 1 artist
+    artist_id: Mapped[int] = mapped_column(ForeignKey("artist.id"), nullable=True)
+    artist: Mapped["Artist"] = relationship(back_populates="song")
+
+    # N users -> UsersLikesSongs <- N songs
+    liked_users: Mapped[List["UsersLikesSongs"]] = relationship(back_populates="song")
 
     def __repr__(self):
-        return f"Song :: ('{self.static_id}' '{self.title}', '{self.uploader}')"
+        return f"Song :: ('{self.id}', '{self.title}', '{self.user}')"
+    
+
+class Album(db.Model):
+    __tablename__ = 'album'
+    # Main DB identifier
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(String(9999), nullable=True) #blob
+    album_cover : Mapped[str] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False, default=datetime.now())
+
+    # 1 album > N songs
+    songs: Mapped[List["Song"]] = relationship(back_populates="album")
+
+    # N albums -> 1 artist
+    artist_id: Mapped[int] = mapped_column(ForeignKey("artist.id"), nullable=True)
+    artist: Mapped["Artist"] = relationship(back_populates="album")
+
+    def __repr__(self):
+        return f"Album :: ('{self.id}', '{self.artist}')"
+
+
+class Artist(db.Model):
+    __tablename__ = 'artist'
+    # Main DB identifiers
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(String(9999), nullable=True) #blob
+    country: Mapped[str] = mapped_column(String(255), default='world')
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False, default=datetime.now())
+
+    # 1 artist -> N songs
+    songs: Mapped[List["Song"]] = relationship(back_populates="artist")
+
+    # 1 artist -> N albums
+    Albums: Mapped[List["Album"]] = relationship(back_populates="artist")
+
+    def __repr__(self):
+        return f"Artist :: ('{self.id}', '{self.country}')"
+
+
+class User(db.Model, UserMixin):
+    __tablename__ = 'user'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    username: Mapped[str] = mapped_column(String(255), unique=True, nullable=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    email_confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    profile_picture: Mapped[str] = mapped_column(String(255), default='default.jpg')
+    country: Mapped[str] = mapped_column(String(255), default='world')
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
+    about_me: Mapped[str] = mapped_column(String(9999), nullable=True) #blob
+    password_crypt_method: Mapped[str] = mapped_column(String(255), nullable=False, default='bcrypt')
+    admin: Mapped[bool] = mapped_column(Boolean, default=False)
+    alive: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[str] = mapped_column(DateTime, nullable=False, default=datetime.now())
+
+    # 1 user > N songs
+    songs: Mapped[List["Song"]] = relationship(back_populates="user")
+
+    # N users -> UsersLikesSongs <- N songs
+    liked_songs: Mapped[List["UsersLikesSongs"]] = relationship(back_populates="user")
+
+
+    def __repr__(self):
+        return f"User :: ('{self.id}', '{self.username}', '{self.email}')"
+
+    # Is this still required? (we have UserMixin, but right right now I don't wanna break ANYTHING.)
+    @property
+    def is_authenticated(self):
+        return self.is_active
+    
+class UsersLikesSongs(db.Model):
+    __tablename__ = 'users_likes_songs'
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    # User
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    user: Mapped["User"] = relationship(back_populates="liked_songs")
+
+    # Song
+    song_id: Mapped[int] = mapped_column(ForeignKey("song.id"))
+    song: Mapped["Song"] = relationship(back_populates="liked_users")
+
+    def __repr__(self):
+        return f"LOVE :: ('{self.user}' LIKES '{self.song}')"
