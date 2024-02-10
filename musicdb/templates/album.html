@@ -1,0 +1,149 @@
+<!-- What to extend, it this case, our base template -->
+{% extends "base.html" %}
+
+<!-- Extra markup that goes in <head> -->
+{% block head %}
+{{ super() }}
+
+<!-- https://css-tricks.com/snippets/css/complete-guide-grid/ -->
+<style>
+.grid-parent {
+    display: grid;
+    width: 100%;
+    gap: 20px;
+
+
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+.grid-child {
+    border-radius: 25px;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.6);
+
+
+    display: inline-block;
+    position: relative;
+    width: 100%;
+
+}
+
+.grid-dummy {
+  margin-top: 150%;
+}
+
+.grid-content {
+    position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: silver/* show me! */
+}
+
+.cover {
+    height: 66.6%;
+    width: 100%;
+    background-color: red;
+    overflow: hidden;
+}
+
+.cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+</style>
+{% endblock %}
+
+<!-- Homepage content -->
+{% block content %}
+<br>
+<br>
+
+<div class="grid-parent">
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+                <div class="cover">
+                    <img src="{{ url_for('static', filename='img/cover.png') }}" alt="">
+                </div>
+                <div class="content-bottom">
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+   
+</div>
+
+
+{% endblock %}

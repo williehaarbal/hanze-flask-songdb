@@ -11,8 +11,6 @@
 <!-- Homepage content -->
 {% block content %}
 
-<h1>Songs</h1>
-{{ current_user }}
 
 <br>
 
@@ -22,7 +20,7 @@
 
     <div class="song-object-picture">
         
-        <img src="{{url_for('cdn_icons', filename=song.file_cover)}}" alt="Song image" style="width: 100%; height: 100%;">
+        <img src="{{url_for('utils.cdn_icons', filename=song.file_cover)}}" alt="Song image" style="width: 100%; height: 100%;">
 
     </div>
 
@@ -45,7 +43,7 @@
     <div class="song-object-play">
         <!-- Gotta say; this media player is awesome -->
         <!-- https://essential-audio-player.net/ -->
-        <div class="essential_audio vertical-center " style="padding-left: 10px; padding-right: 10px;" data-url="{{url_for('cdn_songs', filename=song.file_name)}}"></div>
+        <div class="essential_audio vertical-center " style="padding-left: 10px; padding-right: 10px;" data-url="{{url_for('utils.cdn_songs', filename=song.file_name)}}"></div>
     </div>
 
 

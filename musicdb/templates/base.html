@@ -31,7 +31,7 @@
 			<div class="container">
 			<div class="collapse navbar-collapse d-lg-flex" id="navbarsExample11">
 					<!-- left -->
-					<a class="navbar-brand col-lg-3 me-0" href="{{ url_for('home') }}" style="height: 38px; padding-top: 0; padding-bottom: 0;">
+					<a class="navbar-brand col-lg-3 me-0" href="{{ url_for('main.home') }}" style="height: 38px; padding-top: 0; padding-bottom: 0;">
 						<img src="{{ url_for('static', filename='img/musicdb_logo_light.png') }}" alt="" style="max-height: 100%;">
 					</a>
 					
@@ -47,11 +47,12 @@
 								<span class="visually-hidden">Toggle Dropdown</span>
 								</button>
 								<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="{{ url_for('songs') }}">Songs</a></li>
+								<li><a class="dropdown-item" href="{{ url_for('songs.songs') }}">Songs</a></li>
 								<li><a class="dropdown-item" href="#">Albums</a></li>
-								<li><a class="dropdown-item" href="#">Artists</a></li>
+								<li><a class="dropdown-item" href="{{ url_for('artists.artist') }}">Artists</a></li>
+								<li><a class="dropdown-item" href="#">Profiles</a></li>
 								<li><hr class="dropdown-divider"></li>
-								<li><a class="dropdown-item" href="{{ url_for('upload') }}">Upload</a></li>
+								<li><a class="dropdown-item" href="{{ url_for('songs.upload') }}">Upload</a></li>
 								</ul>
 							</div>
 						</li>
@@ -78,7 +79,7 @@
 						</li>
 						<li class="nav-item">
 							<button type="button" class="btn btn btn-secondary rounded-end-pill">
-								<img src="bootstrap-icons-1.11.3/search.svg" alt="" style="position: relative; bottom: 2px; right: 3px; filter: invert(100%);">
+								<img src="{{ url_for('static', filename='icons/search.svg') }}" style="position: relative; bottom: 2px; right: 3px; filter: invert(100%);">
 							</button>
 						</li>
 					</ul>`
@@ -99,12 +100,26 @@
 
 
 						<li>
-							<a href="#">
+							<a href="{{ url_for('users.profile') }}">
 								<button type="button" class="btn btn-outline-success rounded-0 rounded-start-pill">
 									{{ current_user.username }}
 								</button>
 							</a>
 						</li>
+
+						{% if current_user.admin %}
+						<li class="nav-item">
+							<div class="btn-group">
+								<button type="button" class="btn btn-danger dropdown-toggle rounded-0" data-bs-toggle="dropdown" aria-expanded="false">ADMIN TOOLS</button>
+								<span class="visually-hidden"></span>
+								</button>
+								<ul class="dropdown-menu">
+								<li><a class="dropdown-item" href="{{ url_for('artists.artist_add') }}">add artist</a></li>
+								<li><a class="dropdown-item" href="#">F.A.Q.</a></li>
+								</ul>
+							</div>
+						</li>
+						{% endif %}
 
 						<li class="nav-item">
 							<div class="btn-group">
@@ -112,18 +127,19 @@
 									{% if current_user.profile_picture == 'default.jpg' %}
 									<img src="{{ url_for('static', filename='img/default_user.jpg') }}" alt="profile picture" class="rounded-5" style="height: 20px; width: 20px; transform: scale(130%);">
 									{% else %}
-									<img src="{{ url_for('cdn_profile_picture', filename=current_user.profile_picture) }}" alt="profile picture" class="rounded-5" style="height: 20px; width: 20px; transform: scale(130%);">
+									<img src="{{ url_for('utils.cdn_profile_picture', filename=current_user.profile_picture) }}" alt="profile picture" class="rounded-5" style="height: 20px; width: 20px; transform: scale(130%);">
 									{% endif %}
 								</button>
 								<span class="visually-hidden">Toggle Dropdown</span>
 								</button>
 								<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="#">Upload</a></li>
+								<li><a class="dropdown-item" href="#">About</a></li>
+								<li><a class="dropdown-item" href="#">F.A.Q.</a></li>
 								<li><hr class="dropdown-divider"></li>
-								<li><a class="dropdown-item" href="#">Upload</a></li>
-								<li><a class="dropdown-item" href="{{ url_for('account') }}">Account</a></li>
+								<li><a class="dropdown-item" href="#">Profile</a></li>
+								<li><a class="dropdown-item" href="{{ url_for('users.account') }}">Account</a></li>
 								<li><hr class="dropdown-divider"></li>
-								<li><a class="dropdown-item" href="{{ url_for('logout')}}">Logout</a></li>
+								<li><a class="dropdown-item" href="{{ url_for('users.logout')}}">Logout</a></li>
 								</ul>
 							</div>
 						</li>
@@ -131,12 +147,12 @@
 						{% else %}
 						<!-- No user logged in -->
 						<li class="nav-item">
-							<a href="{{ url_for('register') }}">
+							<a href="{{ url_for('users.register') }}">
 								<button type="button" class="btn btn-success rounded-start-pill">SIGN UP</button>
 							</a>
 						</li>
 						<li class="nav-item">
-							<a href="{{ url_for('login') }}">
+							<a href="{{ url_for('users.login') }}">
 								<button type="button" class="btn btn btn-outline-success rounded-end-pill">SIGN IN</button>
 							</a>
 						</li>

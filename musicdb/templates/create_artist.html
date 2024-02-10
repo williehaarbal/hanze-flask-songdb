@@ -1,0 +1,79 @@
+<!-- What to extend, it this case, our base template -->
+{% extends "base.html" %}
+
+<!-- Extra markup that goes in <head> -->
+{% block head %}
+  {{ super() }}
+<style>
+.mid {
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 25px;
+    overflow: hidden;
+}
+
+
+
+
+</style>
+{% endblock %}
+
+<!-- Homepage content -->
+{% block content %}
+
+<br>
+<h1 style="text-align: center; font-family: 'Open Sans', sans-serif; font-weight: 600; font-size: 3.0rem;">Add Artist</h1>
+
+<div class="row">
+    <div class="col col-3"></div>
+    <div class="col col-6 mid">
+        <form method="POST" action="" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <div class="form-group">
+                    {{ form.name.label(class="form-control-label custom-form-label" ) }}
+
+                    {% if form.name.errors %}
+                    {{ form.name(class="form-control form-control-lg rounded-5 is-invalid ")}}
+                    <div class="invalid-feedback custom-error-label">
+                        {% for error in form.name.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                        {{ form.name(class="form-control form-control-lg rounded-5")}}
+                    {% endif %}
+                </div>
+
+
+                <div class="form-group">
+                    {{ form.country_flag.label(class="form-control-label custom-form-label" ) }}
+                    {{ form.country_flag(class="form-control form-control-lg rounded-5") }}
+                </div>
+                <div class="form-group">
+                    {{ form.picture.label(class="form-control-label custom-form-label") }}
+                    {{ form.picture(class="form-control form-control-lg rounded-5") }}
+                </div>
+                <div class="form-group">
+                    {{ form.description.label(class="form-control-label custom-form-label") }}
+                    {{ form.description(class="form-control form-control-lg rounded-5", **{"oninput":"auto_grow(this)"}) }}
+                </div>
+            </fieldset>
+            <div class="submit-button">
+                {{ form.submit(class="btn btn-success") }}
+            </div>
+        </form>
+    </div>
+    <div class="col col-3"></div>
+</div>
+
+
+
+
+
+<script>
+    function auto_grow(element) {
+    element.style.height = "5px";
+    element.style.height = (element.scrollHeight) + "px";
+}
+</script>
+{% endblock %}

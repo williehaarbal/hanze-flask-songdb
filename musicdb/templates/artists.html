@@ -1,0 +1,225 @@
+<!-- What to extend, it this case, our base template -->
+{% extends "base.html" %}
+
+<!-- Extra markup that goes in <head> -->
+{% block head %}
+{{ super() }}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/essential_audio_button.css') }}"></link>
+<!-- https://css-tricks.com/snippets/css/complete-guide-grid/ -->
+<style>
+.grid-parent {
+    display: grid;
+    width: 100%;
+    gap: 20px;
+
+
+    grid-template-columns: 1fr 1fr;
+}
+
+.grid-child {
+    border-radius: 25px;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.6);
+
+
+    display: inline-block;
+    position: relative;
+    width: 100%;
+
+}
+
+.grid-dummy {
+  margin-top: 75%;
+}
+
+.grid-content {
+    position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(255, 255, 255, 0.1)/* show me! */
+}
+
+.cover {
+    height: 66.6%;
+    width: 100%;
+    background-color: red;
+    overflow: hidden;
+}
+
+.cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.content-bottom {
+    display: grid;
+    height: 33.4%;
+    width: 100%;
+    padding: 10px;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+    grid-template-rows: 3fr 2fr;
+    font-family: 'Open Sans', sans-serif;
+    color: rgba(255, 255, 255, 1);
+}
+
+.content-bottom .name {
+    font-size: 3rem;
+    font-weight: 800;
+    grid-column: 1 /  6;
+    grid-row: 1 / 2;
+    text-overflow: hidden;
+    overflow: hidden;
+}
+
+.content-bottom .flag img {
+    border-radius: 20px !important;
+    overflow: hidden;
+    transform: scale(50%);
+    grid-column: 6 /  7;
+    grid-row: 1 / 2;
+}
+
+.content-bottom .amount{
+    color: white;
+    grid-column: 1 /  4;
+    grid-row: 2 / 3;
+    font-size: 1.3rem;
+    padding-top: 15px;
+}
+
+.content-bottom .play {
+    background-color: white;
+    grid-column: 5 /  7;
+    grid-row: 2 / 3;
+}
+
+.padding-left {
+    padding-left: 20px;
+}
+
+.content-bottom a {
+    color: white;
+    text-decoration: none;
+}
+
+
+.content-bottom a:hover {
+    color: #f05740;
+    text-decoration: none;
+}
+
+
+</style>
+{% endblock %}
+
+<!-- Homepage content -->
+{% block content %}
+<br>
+<br>
+
+<div class="grid-parent">
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+                <div class="cover">
+                    <a href="#">
+                        <img src="{{ url_for('static', filename='img/band.jpg') }}" alt="">
+                    </a>
+                </div>
+                <div class="content-bottom">
+                    <div class="name padding-left">
+                        <a href="#">Bad Nerves</a>
+                    </div>
+                    <div class="flag">
+                        <img src="{{ url_for('static', filename='flags/gb.svg') }}" alt="">
+                    </div>
+
+                    <div class="amount padding-left">
+                        <a href="#">5 albums</a> / <a href="#">20 songs</a>
+                    </div>
+
+                    <!-- <div class="play">
+                        <div>
+                            <div class="essential_audio vertical-center " style="padding-left: 10px; padding-right: 10px;" data-url=""></div>
+                        </div>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-child">
+        <div class="grid-dummy">
+            <div class="grid-content">
+
+            </div>
+        </div>
+
+    </div>
+
+   
+</div>
+
+
+<script src="{{ url_for('static', filename='js/essential_audio.js')}}"></script>
+{% endblock %}

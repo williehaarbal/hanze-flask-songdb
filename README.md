@@ -14,3 +14,7 @@ https://docs.sqlalchemy.org/en/20/orm/declarative_tables.html
 
 
 https://docs.sqlalchemy.org/en/20/orm/quickstart.html
+
+https://flagicons.lipis.dev/
+
+https://stackoverflow.com/questions/66046533/scale-font-to-size-when-text-exceeds-container

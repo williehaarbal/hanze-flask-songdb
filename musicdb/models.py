@@ -66,6 +66,7 @@ class Song(db.Model):
 
 class Album(db.Model):
     __tablename__ = 'album'
+
     # Main DB identifier
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
@@ -75,7 +76,7 @@ class Album(db.Model):
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False, default=datetime.now())
 
     # 1 album > N songs
-    songs: Mapped[List["Song"]] = relationship(back_populates="album")
+    song: Mapped[List["Song"]] = relationship(back_populates="album")
 
     # N albums -> 1 artist
     artist_id: Mapped[int] = mapped_column(ForeignKey("artist.id"), nullable=True)
@@ -87,21 +88,23 @@ class Album(db.Model):
 
 class Artist(db.Model):
     __tablename__ = 'artist'
+
     # Main DB identifiers
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     description: Mapped[str] = mapped_column(String(9999), nullable=True) #blob
     country: Mapped[str] = mapped_column(String(255), default='world')
+    band_cover : Mapped[str] = mapped_column(String(255), nullable=True)
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False, default=datetime.now())
 
     # 1 artist -> N songs
-    songs: Mapped[List["Song"]] = relationship(back_populates="artist")
+    song: Mapped[List["Song"]] = relationship(back_populates="artist")
 
     # 1 artist -> N albums
-    Albums: Mapped[List["Album"]] = relationship(back_populates="artist")
+    album: Mapped[List["Album"]] = relationship(back_populates="artist")
 
     def __repr__(self):
-        return f"Artist :: ('{self.id}', '{self.country}')"
+        return f"Artist :: ('{self.id}', {self.name}, '{self.country}')"
 
 
 class User(db.Model, UserMixin):
@@ -123,7 +126,7 @@ class User(db.Model, UserMixin):
     created_at: Mapped[str] = mapped_column(DateTime, nullable=False, default=datetime.now())
 
     # 1 user > N songs
-    songs: Mapped[List["Song"]] = relationship(back_populates="user")
+    song: Mapped[List["Song"]] = relationship(back_populates="user")
 
     # N users -> UsersLikesSongs <- N songs
     liked_songs: Mapped[List["UsersLikesSongs"]] = relationship(back_populates="user")

@@ -31,11 +31,18 @@ db.init_app(app)
 bcrypt = Bcrypt(app)
 
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'bp_users.login'
 login_manager.login_message_category = 'info'
 
-from musicdb import routes
 
+from musicdb.bp_users.routes import bp_users
+from musicdb.bp_songs.routes import bp_songs
+from musicdb.bp_utils.routes import bp_utils
+from musicdb.bp_main.routes import bp_main
+from musicdb.bp_artists.routes import bp_artists
 
-
-
+app.register_blueprint(bp_users)
+app.register_blueprint(bp_songs)
+app.register_blueprint(bp_main)
+app.register_blueprint(bp_utils)
+app.register_blueprint(bp_artists)
