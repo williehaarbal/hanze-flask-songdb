@@ -3,15 +3,20 @@
 
 <!-- Extra markup that goes in <head> -->
 {% block head %}
-  {{ super() }}
-  <style type="text/css">
-    .important { color: #336699; }
-  </style>
+{{ super() }}
 {% endblock %}
 
 <!-- Homepage content -->
 {% block content %}
-{{ current_user.username }}
+
+<h1>Upload songs</h1>
+
+current_user: {{ current_user.username }}
+
+<p>Please upload your songs here.</p>
+<p>Right now we only accept mp3 files.</p>
+<p>If al files are uploaded, you will be redirected to the upload session.</p>
+<p>Here you can add all info.</p>
 
 <form method='POST' enctype='multipart/form-data'>
   {{form.hidden_tag()}}

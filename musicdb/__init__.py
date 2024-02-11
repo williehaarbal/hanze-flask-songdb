@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 import os
+import logging
 
 class Base(DeclarativeBase):
     pass
@@ -30,7 +31,9 @@ db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
 DEBUG = True
-
+logging.basicConfig()
+logger = logging.getLogger('sqlalchemy.engine')
+logger.setLevel(logging.INFO)
 bcrypt = Bcrypt(app)
 
 login_manager = LoginManager(app)

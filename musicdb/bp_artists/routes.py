@@ -220,6 +220,17 @@ def create_artist(name:str, **kwargs) -> int:
         return new_artist.id
 
 
-
-
+############################################################
+# FUNC :: parse artist name
+# TODO better save handling
+############################################################
+def parse_artist_url(artist: str) -> str:
+    """
+        'Some Band' -> 'some-band'
+    """
+    p_err(artist)
+    if artist is None:
+        return None
+    safe_artist_name = artist.name.replace(" ", "-").lower()
+    return url_for('artists.artist', arg_artist=safe_artist_name)
 

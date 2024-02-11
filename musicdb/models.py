@@ -127,7 +127,6 @@ class User(db.Model, UserMixin):
 
     # 1 user > N songs
     song: Mapped[List["Song"]] = relationship(back_populates="user")
-
     # N users -> UsersLikesSongs <- N songs
     liked_songs: Mapped[List["UsersLikesSongs"]] = relationship(back_populates="user")
 
