@@ -1,4 +1,5 @@
 from flask import flash
+from markupsafe import Markup
 from flask_wtf import FlaskForm
 from sqlalchemy import func
 from wtforms import FileField, SubmitField, StringField, PasswordField, BooleanField, SelectField, TextAreaField, ValidationError
@@ -7,13 +8,20 @@ from flask_wtf.file import FileAllowed
 from wtforms.widgets import TextArea
 from musicdb import db
 from musicdb.models import Artist
-
+from bs4 import BeautifulSoup
 from musicdb.models import Artist
 
 
 countries = {
-    'Netherlands': 'nl.svg',
-    'Germany': 'ge.svg'
+    'Netherlands': 'nl',
+    'Germany': 'de',
+    'United Kingdom': 'gb',
+    'Sweden': 'se',
+    'Poland': 'pl',
+    'Belgium': 'be',
+    'USA': 'us',
+    'France': 'fr',
+    'Other': None
 }
 
 class CreateArtist(FlaskForm):
@@ -24,25 +32,18 @@ class CreateArtist(FlaskForm):
     submit = SubmitField('Create')
     
     def validate_name(self, name):
-        excist = db.session.query(Artist.id).filter_by(name = name.data).first() is not None
+        excist = db.session.query(Artist.id, Artist.name).filter(func.lower(Artist.name) == func.lower(name.data)).first() is not None
         if excist:
-            raise ValidationError('Band already registered! No need to add it once more.')
+
+            id, name = db.session.query(Artist.id, Artist.name).filter(func.lower(Artist.name) == func.lower(name.data)).first()
+           
+            raise ValidationError(Markup(f"<b>Band with name {name} already exists!<b>"))
 
 
+class html_container():
+    x = None
+    def __init__(self, x):
+        self.x = x
 
-
-   # def validate_username(self, username):
-    #     db = DB()
-    #     db.exe(SQL_USERNAME_EXISTS(username.data))
-    #     answer = db.fall()[0][0]
-    #     db.close()
-    #     if answer == 'True':
-    #         raise ValidationError('That username is taken. Please choose a different one.')
-
-    # def validate_email(self, email):
-    #     db = DB()
-    #     db.exe(SQL_CONFIRMED_EMAIL_EXISTS(email.data))
-    #     answer = db.fall()[0][0]
-    #     db.close()
-    #     if answer == 'True':
-    #         raise ValidationError('That email is taken. Please choose a different one.')
+    def __repr__(self):
+        return str(self.x)

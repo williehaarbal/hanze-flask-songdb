@@ -25,3 +25,19 @@ https://stackoverflow.com/questions/16573095/case-insensitive-flask-sqlalchemy-q
 # Lower / upper compare
 from sqlalchemy import func
 user = models.User.query.filter(func.lower(User.username) == func.lower("GaNyE")).first(
+
+
+    # 
+
+artist = Artist.query.all()
+for a in artist:
+    print(a)
+
+artist = Artist.query.paginate()
+
+artist.per_page
+artist.page
+artist.items
+
+
+artist.query.paginate(per_page=5, page=2)

@@ -36,7 +36,7 @@
                     {{ form.name(class="form-control form-control-lg rounded-5 is-invalid ")}}
                     <div class="invalid-feedback custom-error-label">
                         {% for error in form.name.errors %}
-                            <span>{{ error }}</span>
+                            {{ error }}
                         {% endfor %}
                     </div>
                     {% else %}

@@ -112,6 +112,23 @@
     text-decoration: none;
 }
 
+.custom-paginator a {
+    color: #fff;
+}
+
+.custom-paginator a:hover {
+    color: #f05740
+}
+
+.custom-paginator li:last-child a, .custom-paginator li:first-child a, .middle {
+    background-color: #f05740;
+}
+
+.custom-paginator li:last-child a:hover, .custom-paginator li:first-child a:hover, .middle:hover{
+    color: #000;
+    background-color: #c94d39;
+}
+
 
 </style>
 {% endblock %}
@@ -121,26 +138,54 @@
 <br>
 <br>
 
+<div style="width: 100%; position: relative;">
+    <nav aria-label="Page navigation example" data-bs-theme="dark" style="position: absolute; left: 50%; transform: translateX(-50%);">
+        <ul class="pagination custom-paginator">
+            {% for page_num in paginate.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if paginate.page == page_num %}
+                <li class="page-item"><a class="page-link disabled" href="{{ url_for('artists.artist_list', page=page_num) }}">{{ page_num }}</a></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="{{ url_for('artists.artist_list', page=page_num) }}">{{ page_num }}</a></li>
+                {% endif %}
+                {% else %}
+                <li class="page-item page-link">...</li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+</div>
+
+<br>
+<br>
+<br>
+
 <div class="grid-parent">
 
+    {% for artist in artist_list %}
+    
     <div class="grid-child">
         <div class="grid-dummy">
             <div class="grid-content">
                 <div class="cover">
-                    <a href="#">
-                        <img src="{{ url_for('static', filename='img/band.jpg') }}" alt="">
+                    <a href="{{ artist.url_to_artist }}">
+                        {% if artist.cover_img %}
+                            <img src="{{ artist.cover_img }}" alt="">
+                        {% else %}
+                        <img src="{{ url_for('static', filename='img/unknown_band.png') }}" alt="">
+                        {% endif %}
                     </a>
                 </div>
                 <div class="content-bottom">
                     <div class="name padding-left">
-                        <a href="#">Bad Nerves</a>
+                        <a href="{{ artist.url_to_artist }}">{{ artist.name }}</a>
                     </div>
                     <div class="flag">
-                        <img src="{{ url_for('static', filename='flags/gb.svg') }}" alt="">
+                        <img src="{{ artist.country_icon }}" alt="">
                     </div>
 
                     <div class="amount padding-left">
-                        <a href="#">5 albums</a> / <a href="#">20 songs</a>
+                        <a href="{{ artist.url_to_songs }}">{{ artist.amount_songs }} songs</a> / <a href="{{ artist.url_to_albums }}">{{ artist.amount_albums }} albums</a>
                     </div>
 
                     <!-- <div class="play">
@@ -151,74 +196,10 @@
                 </div>
             </div>
         </div>
-
     </div>
 
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-   
-</div>
+    
+    {% endfor %}
 
 
 <script src="{{ url_for('static', filename='js/essential_audio.js')}}"></script>

@@ -24,9 +24,12 @@ app.config['TEMP_FOLDER'] = os.path.join(os.getcwd(), 'data', 'temp')
 app.config['SONG_FOLDER'] = os.path.join(os.getcwd(), 'data', 'songs')
 app.config['SONG_COVERS_ICON'] = os.path.join(os.getcwd(), 'data', 'songs_covers_icon')
 app.config['PROFILE_PICTURE'] = os.path.join(os.getcwd(), 'data', 'profile_pictures')
+app.config['BAND_COVER'] = os.path.join(os.getcwd(), 'data', 'band_covers')
 
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
+
+DEBUG = True
 
 bcrypt = Bcrypt(app)
 
