@@ -1,0 +1,226 @@
+<!-- What to extend, it this case, our base template -->
+{% extends "base.html" %}
+
+<!-- Extra markup that goes in <head> -->
+{% block head %}
+{{ super() }}
+
+<style>
+.grid-grand-parent {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 1fr 1fr;
+}
+
+.grid-parent {
+    width: 100%;
+    min-width: 100px;
+    border-radius: 25px;
+    overflow: hidden;
+}
+
+.grid-parent-left {
+    background-color: rgba(0, 0, 0, 0.6);
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+}
+
+.grid-parent-right {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+}
+
+.grid-child-right {
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 25px;
+    overflow: hidden;
+}
+
+.grid-chil-right-artist {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+}
+
+.grid-chil-right-album {
+
+}
+
+.grid-child-left {
+    padding: 20px;
+}
+
+.grid-child-right {
+}
+
+.left-title {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+}
+
+.grid-parent-right {
+
+}
+
+.header {
+    grid-row: 1 / 2;
+    grid-column: 1 / 2;
+    width: 100%;
+    padding: 10px 10px 10px 30px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 3rem;
+}
+
+.custom-form-label {
+    color: rgba(255, 255, 255, 1);
+    padding: 15px 5px 5px 30px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1.2rem;
+}
+
+.custom-error-label {
+    background-color: white;
+    color: red;
+    padding: 2px;
+    padding-left: 5px;
+    margin: 10px 30px 2px 30px;
+    border: 2px solid red;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 70%;
+}
+
+.grid-child-left-img {
+    padding: 20px;
+    width: 100%;
+    text-align: center;
+}
+
+.grid-child-left-img img{
+    width: 50%;
+    border-radius: 50px;
+    overflow: hidden;
+}
+
+</style>
+{% endblock %}
+
+<!-- Homepage content -->
+{% block content %}
+
+
+<br>
+<br>
+
+<div class="grid-grand-parent">
+    <!-- LEFT PARENT -->
+    <div class="grid-parent grid-parent-left">
+        <form action="" method="POST">
+            {{ form.hidden_tag() }}
+
+            <!-- SONG -->
+            <div class="header">
+                {{ song.title }}
+            </div>
+            
+            {% if cover %}
+            <div class="grid-child-left grid-child-left-img">
+                <img src="{{ cover }}" alt="">
+            </div>
+            {% else %}
+            <div class="grid-child-left grid-child-left-img">
+                <img src="{{ url_for('static', filename='img/default.jpg') }}" alt="">
+            </div>
+            {% endif %}
+
+            <!-- song title -->
+            <div class="left-title grid-child-left">
+                <div class="form-group">
+
+                    {{ form.title.label(class="form-control-label custom-form-label") }}
+                    {% if form.title.errors %}
+                        {{ form.title(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback custom-error-label">
+                            {% for error in form.title.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.title(class="form-control form-control-lg rounded-5") }}
+                    {% endif %}
+
+                </div>
+            </div>
+            
+            <!-- song artist -->
+            <div class="form-group grid-child-left">
+                {{ form.artist.label(class="form-control-label custom-form-label") }}
+                    {% if form.artist.errors %}
+                        {{ form.artist(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback custom-error-label">
+                            {% for error in form.artist.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.artist(class="form-control form-control-lg rounded-5") }}
+                    {% endif %}
+            </div>
+
+            <!-- song album -->
+            <div class="form-group grid-child-left">
+                {{ form.album.label(class="form-control-label custom-form-label") }}
+                    {% if form.album.errors %}
+                        {{ form.album(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback custom-error-label">
+                            {% for error in form.album.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.album(class="form-control form-control-lg rounded-5") }}
+                    {% endif %}
+            </div>
+
+            <!-- song alive -->
+            <div class="form-group grid-child-left">
+                {{ form.alive.label(class="form-control-label custom-form-label") }}
+                    {% if form.alive.errors %}
+                        {{ form.alive(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback custom-error-label">
+                            {% for error in form.alive.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.alive(class="form-control form-control-lg rounded-5") }}
+                    {% endif %}
+            </div>
+
+            <div class="form-group">
+                {{ form.submit(class="btn btn-success") }}
+            </div>
+        </form>
+    </div>
+
+    <div class="grid-parent grid-parent-right">
+
+    </div>
+</div>
+
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+{% endblock %}

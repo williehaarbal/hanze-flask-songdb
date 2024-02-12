@@ -10,6 +10,10 @@ bp_utils = Blueprint('utils', __name__)
 def cdn_song_icons(filename):
     return send_from_directory(app.config['SONG_COVERS_ICON'], filename)
 
+@bp_utils.route('/cdn/ib/<path:filename>')
+def cdn_song_big(filename):
+    return send_from_directory(app.config['SONG_COVER'], filename)
+
 # STATIC DATA :: SONGS
 # CDN path is what user sees in browser!
 @bp_utils.route('/cdn/s/<path:filename>')

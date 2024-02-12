@@ -4,25 +4,128 @@
 <!-- Extra markup that goes in <head> -->
 {% block head %}
 {{ super() }}
-{% endblock %}
 
+<style>
+
+.grid-parent {
+  display: grid;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-family: "Open Sans", sans-serif;
+  width: 50%;
+  border-radius: 25px;
+  overflow: hidden;
+}
+
+.grid-title {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 20px;
+  color: white;
+  font-weight: 800;
+}
+
+.grid-note {
+  padding: 20px;
+  color: white;
+}
+
+.custom-form-label {
+    color: rgba(255, 255, 255, 1);
+    padding: 15px 5px 5px 30px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1.2rem;
+}
+
+.custom-error-label {
+    background-color: white;
+    color: red;
+    padding: 2px;
+    padding-left: 5px;
+    margin: 10px 30px 2px 30px;
+    border: 2px solid red;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.grid-upload {
+	padding: 20px;
+}
+
+.grid-upload form {
+	padding: 20px;
+	display: grid;
+	grid-template-columns: auto auto;
+	grid-template-rows: auto auto;
+}
+
+.grid-upload-child-left {
+	grid-column: 1 / 2;
+	grid-row: 1 / 2;
+	width: 100%;
+}
+
+
+.grid-upload-child-right {
+	grid-column: 2 / 3;
+	grid-row: 1 / 2;
+	position: relative;
+	left: 5px;
+	top: 5px;
+	transform: scale(110%);
+}
+
+.grid-upload-child-bottom {
+	grid-column: 1 / 3;
+	grid-row: 2 / 3;
+}
+
+
+</style>
+
+{% endblock %}
 <!-- Homepage content -->
 {% block content %}
 
-<h1>Upload songs</h1>
+<br>
+<br>
 
-current_user: {{ current_user.username }}
+<div class="grid-parent">
+	<div class="grid-child grid-title">
+		<h1>Upload songs</h1>
+	</div>
 
-<p>Please upload your songs here.</p>
-<p>Right now we only accept mp3 files.</p>
-<p>If al files are uploaded, you will be redirected to the upload session.</p>
-<p>Here you can add all info.</p>
+	<div class="grid-child grid-note">
+		<p>- You can upload multiple files at once.</p>
+		<p>- You can only upload mp3 files.</p>
+		<p>- Info about files will be automaticly retreived from file. (if provided)</p>
+		<p>- After upload you will be send to your newly uploaded files.</p>
+		<p>- Please only use Copyright free music. (for testing)</p>
+	</div>
 
-<form method='POST' enctype='multipart/form-data'>
-  {{form.hidden_tag()}}
-  {{form.files()}}
-  {{form.submit()}}
-</form>
+<div class="grid-upload">
+  	<form method='POST' enctype='multipart/form-data'>
+    {{form.hidden_tag()}}
+
+	<div class="grid-upload-child-left">
+		{{ form.files(class="form-control form-control-lg custom-form-label") }}
+	</div>
+
+	<div class="grid-upload-child-right">
+		{{ form.submit(class="form-control-lg btn btn-success") }}
+	</div>
+
+	<div class="grid-upload-child-bottom">
+		{% if form.files.errors %}
+			<div class="custom-error-label">
+				{% for error in form.files.errors %}
+					{{ error }}
+					{% endfor %}
+			</div>
+		{% endif %}
+	</div>
+
+	</form>
+  </div>
+</div>
 
 {% endblock %}
 

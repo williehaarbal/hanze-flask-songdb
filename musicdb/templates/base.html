@@ -48,7 +48,7 @@
 								</button>
 								<ul class="dropdown-menu">
 								<li><a class="dropdown-item" href="{{ url_for('songs.songs') }}">Songs</a></li>
-								<li><a class="dropdown-item" href="#">Albums</a></li>
+								<li><a class="dropdown-item" href="{{ url_for('albums.albums') }}">Albums</a></li>
 								<li><a class="dropdown-item" href="{{ url_for('artists.artist_list') }}">Artists</a></li>
 								<li><a class="dropdown-item" href="#">Profiles</a></li>
 								<li><hr class="dropdown-divider"></li>
@@ -133,8 +133,8 @@
 								<span class="visually-hidden">Toggle Dropdown</span>
 								</button>
 								<ul class="dropdown-menu">
-								<li><a class="dropdown-item" href="#">About</a></li>
-								<li><a class="dropdown-item" href="#">F.A.Q.</a></li>
+								<li><a class="dropdown-item" href="https://github.com/williehaarbal/hanze-flask-songdb">Github</a></li>
+								<li><a class="dropdown-item" href="{{ url_for('users.likes') }}">Likes</a></li>
 								<li><hr class="dropdown-divider"></li>
 								<li><a class="dropdown-item" href="#">Profile</a></li>
 								<li><a class="dropdown-item" href="{{ url_for('users.account') }}">Account</a></li>

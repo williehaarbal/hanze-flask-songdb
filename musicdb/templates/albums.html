@@ -20,7 +20,7 @@
 .grid-child {
     border-radius: 25px;
     overflow: hidden;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.2);
 
 
     display: inline-block;
@@ -39,7 +39,6 @@ position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: silver/* show me! */
 }
 
 .cover {
@@ -55,6 +54,38 @@ position: absolute;
     object-fit: cover;
 }
 
+a {
+    font-family: "Open Sans", sans-serif;
+    text-decoration: none;
+}
+
+a:hover {
+    font-family: "Open Sans", sans-serif;
+}
+
+
+.album-title {
+    padding-left: 5px;
+    padding-top: 5px;
+}
+
+.album-title a {
+    color: white;
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.artist-name {
+    padding-left: 5px;
+    padding-top: 5px;
+}
+
+.artist-name a {
+    color: rgb(150, 150, 150);
+    font-size: 1.2rem;
+    font-weight: 200;
+}
+
 </style>
 {% endblock %}
 
@@ -63,84 +94,33 @@ position: absolute;
 <br>
 <br>
 
+<h1>Album list</h1>
+
 <div class="grid-parent">
 
+    {% for album in albums %}
     <div class="grid-child">
         <div class="grid-dummy">
             <div class="grid-content">
                 <div class="cover">
-                    <img src="{{ url_for('static', filename='img/cover.png') }}" alt="">
+                    <img src="{{ album.album_cover }}" alt="">
                 </div>
                 <div class="content-bottom">
-
+                    <div class="album-title">
+                        <a href="{{ album.url_to_album }}">
+                            {{ album.name }}
+                        </a>
+                    </div>
+                    <div class="artist-name">
+                        <a href="{{ album.url_to_artist }}">
+                            {{ album.artist }}
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-
     </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid-child">
-        <div class="grid-dummy">
-            <div class="grid-content">
-
-            </div>
-        </div>
-
-    </div>
+    {% endfor %}
 
    
 </div>

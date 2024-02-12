@@ -8,11 +8,178 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <style>
 
+/* START FOR SONGS */
+
+a {
+    color: white;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #f05740;
+    text-decoration: none;
+}
+
+.song-container {
+    display: grid;
+
+    height: 88px;
+    width: 100%;
+
+    margin-top: 12px;
+
+    grid-template-columns: 88px 1fr 1fr 1fr 44px 44px 44px;
+
+    grid-template-rows: 44px 44px;
+
+    background-color: rgba(50, 50, 50, 0.8);
+    color: rgba(255, 255, 255, 1);
+
+    border-radius: 15px;
+    overflow: hidden;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.song-object-picture {
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
+}
+
+.song-object-title {
+    grid-column: 2 / 5;
+    grid-row: 1 / 2;
+
+    font-size: 1.6rem;
+    /* For vetical center */
+    position: relative;
+}
+
+.song-object-artist {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+    
+    font-size: 1.1rem;
+    position: relative;
+}
+
+.song-object-album {
+    grid-column: 3 / 4;
+    grid-row: 2 / 3;
+    
+    font-size: 1.1rem;
+    position: relative;
+}
+
+.song-object-goto {
+    grid-column: 7 / 8;
+    grid-row: 1 / 3;
+}
+
+.song-object-fav {
+    grid-column: 5 / 6;
+    grid-row: 1 / 2;
+}
+
+.song-object-fav img {
+    width: 100%;
+    transform: scale(70%);
+    /* Orange */
+    /* filter: invert(54%) sepia(19%) saturate(6128%) hue-rotate(332deg) brightness(101%) contrast(99%);  */
+    /* White */
+    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(103%) contrast(103%);
+}
+
+.song-object-owner {
+    grid-column: 6 / 7;
+    grid-row: 1 / 2;
+}
+
+.song-object-download {
+    grid-column: 6 / 7;
+    grid-row: 1 / 2;
+
+}
+
+.song-object-download a img {
+    width: 100%;
+    transform: scale(70%);
+    padding-top: 5px;
+    /* Orange */
+    /* filter: invert(54%) sepia(19%) saturate(6128%) hue-rotate(332deg) brightness(101%) contrast(99%);  */
+    /* White */
+    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(93deg) brightness(103%) contrast(103%);
+}
+
+.song-object-time {
+    grid-column: 6 / 7;
+    grid-row: 2 / 3;
+    padding-top: 10px;
+}
+
+.song-object-play {
+    grid-column: 4 / 7;
+    grid-row: 2 / 3;
+}
+
+.vertical-center {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+.horizontal-center {
+    margin: 0;
+    position: absolute;
+    left: 50%;
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%);
+}
+
+.left-padding {
+    padding-left: 15px;
+}
+
+.right-padding {
+    padding-right: 5px;
+}
+
+.overflow-hidden {
+    white-space: nowrap;
+}
+
+.no-image {
+    overflow: hidden;
+    padding-top: 10px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.custom-paginator a {
+    color: #fff;
+}
+
+.custom-paginator a:hover {
+    color: #f05740
+}
+
+.custom-paginator li:last-child a, .custom-paginator li:first-child a, .middle {
+    background-color: #f05740;
+}
+
+.custom-paginator li:last-child a:hover, .custom-paginator li:first-child a:hover, .middle:hover{
+    color: #000;
+    background-color: #c94d39;
+}
+
+/* END FOR SONGS */
+
 .grid-parent {
     display: grid;
     width: 100%;
-    overflow: hidden;
     grid-template-columns: 40% 60%;
+    gap: 20px;
 }
 
 .grid-child {
@@ -72,6 +239,11 @@
 
 .grid-right {
     grid-column: 2 / 3;
+    display: grid;
+    gap: 20px;
+    
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
 }
 
 #auto-size {
@@ -92,8 +264,24 @@
     padding-top: 40px;
 }
 
+.grid-right-child {
+    width: 100%;
+    border-radius: 25px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
 
+.grid-right-albums {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+    border-radius: 25px;
+}
 
+.grid-right-songs {
+    grid-column: 1 /2;
+    grid-row: 1 / 2;
+    border-radius: 25px;
+
+}
 
 </style>
 {% endblock %}
@@ -103,11 +291,12 @@
 <br>
 <br>
 
+
 <div class="grid-parent">
     <!-- left -->
     <div class="grid-left grid-child">
         <div class="left-img">
-            <img src="{{ url_for('utils.cdn_band_picture', filename=artist.band_cover) }}" alt="">
+            <img src="{{ artist.band_cover }}" alt="">
         </div>
         <div class="left-name">
             <div id="auto-size">
@@ -115,7 +304,7 @@
             </div>
         </div>
         <div class="left-flag">
-            <img src="{{ url_for('utils.cdn_flags', filename=artist.country) }}" alt="">
+            <img src="{{ artist.flag_svg }}" alt="">
         </div>
         <div class="left-about">
             <div>
@@ -126,7 +315,105 @@
 
     <!-- right -->
     <div class="grid-right">
+        
+        <div class="grid-right-albums grid-right-child">
 
+        </div>
+
+
+        <div class="grid-right-songs grid-right-child">
+            <!-- START -->
+            <div style="width: 100%; position: relative;">
+                <nav aria-label="Page navigation example" data-bs-theme="dark" style="position: absolute; left: 50%; transform: translateX(-50%);">
+                    <ul class="pagination custom-paginator">
+                        {% for page_num in paginate.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if page_num %}
+                            {% if paginate.page == page_num %}
+                            <li class="page-item"><a class="page-link disabled" href="{{ url_for('songs.songs', page=page_num) }}">{{ page_num }}</a></li>
+                            {% else %}
+                            <li class="page-item"><a class="page-link" href="{{ url_for('songs.songs', page=page_num) }}">{{ page_num }}</a></li>
+                            {% endif %}
+                            {% else %}
+                            <li class="page-item page-link">...</li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
+
+            <br>
+            <br>
+
+            {% for song in songs %}
+
+            <div class="song-container">
+
+                <div class="song-object-picture">
+                    {% if song.cdn_song_icon %}
+                        <img src="{{ song.cdn_song_icon }}" alt="Song image" style="width: 100%; height: 100%;">
+                    {% else %}
+                        <div class="no-image">
+                            <p>NO</p>
+                            <P>IMAGE</P>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="song-object-title left-padding">
+                    <a href="#">
+                        <div class="vertical-center overflow-hidden">{{ song.title }}</div>
+                    </a>
+                </div>
+
+                <div class="song-object-artist left-padding">
+                    <a href="{{ song.url_to_artist }}">
+                        <div class="vertical-center overflow-hidden">{{ song.artist }}</div>
+                    </a>
+                </div>
+
+                <div class="song-object-album">
+                    <a href="{{ song.url_to_album }}">
+                        <div class="vertical-center overflow-hidden">{{ song.album }}</div>
+                    </a>
+                    
+                </div>
+                <div class="song-object-play">
+                    <!-- Gotta say; this media player is awesome -->
+                    <!-- https://essential-audio-player.net/ -->
+                    <div class="essential_audio vertical-center " style="padding-left: 10px; padding-right: 10px;" data-url="{{ song.cdn_song_file }}"></div>
+                </div>
+
+
+                <div class="song-object-download">
+                    <a href="{{ song.cdn_song_file }}" download>
+                            <img src="{{ url_for('static', filename='icons/cloud-arrow-down-fill.svg')}}" alt="favorite">
+                    </a>
+                </div>
+
+                <div class="song-object-owner">
+                    
+                </div>
+                <div class="song-object-fav">
+                    {% if song.is_favorite %}
+                        <img src="{{ url_for('static', filename='icons/star-fill.svg')}}" alt="favorite">
+                    {% else %}
+                        <span id="song-{{ song.id }}" onclick="performLike(this.id)">
+                            <img src="{{ url_for('static', filename='icons/star.svg')}}" alt="favorite">
+                        </span>
+                    {% endif %}
+                </div>
+                <div class="song-object-time">
+                    {{ song.length }}
+                </div>
+                <div class="song-object-goto">
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+            <!-- END -->
+        </div>
     </div>
 </div>
 

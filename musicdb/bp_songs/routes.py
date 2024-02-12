@@ -1,13 +1,14 @@
 import math
-from sqlalchemy import func
+from sqlalchemy import func, text
 from werkzeug.utils import secure_filename
+from musicdb.bp_albums.routes import create_album
 from musicdb.bp_artists.routes import create_artist, parse_artist_url
-from musicdb.models import Artist, Song
+from musicdb.models import Album, Artist, Song, UsersLikesSongs
 from flask_login import current_user
 from musicdb import app, db
 from musicdb.general import p_err, p_note
-from flask import Blueprint, flash, redirect, render_template, url_for
-from .forms import UploadForm
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+from .forms import UpdateSong, UploadForm
 from PIL import Image
 import hashlib
 import eyed3
@@ -24,8 +25,8 @@ bp_songs = Blueprint('songs', __name__)
 def upload():
 
     if not current_user.is_authenticated:
-        flash('Please login to start uploading.')
-        return redirect(url_for('bp_songs.login'))
+        flash('Please login to start using this part of the website...')
+        return redirect(url_for('users.login'))
     
     form = UploadForm()
     if form.validate_on_submit():
@@ -47,6 +48,7 @@ def upload_songs(files) -> None:
 
     # Songs that got succesfully uploaded
     uploaded_files = []
+    created_albums = {} # name : album.id
 
     # Songs that get uploaded belong to an upload session, so later we can edit these songs together.
     upload_session_uuid = uuid.uuid4().int>>32
@@ -121,7 +123,7 @@ def upload_songs(files) -> None:
             file_cover = f"{image_md5}.png"
             break
 
-        
+        artist_object = None
 
         # Check if artist exist, if so. Get the id
         # If not exist, create the artist!
@@ -134,25 +136,35 @@ def upload_songs(files) -> None:
             print(f'QUERY RESULT: {artist}')
 
             if artist:
-                temp = artist.id
-                p_note(f'EXISTING ARTIST with ID : {temp}')
+                artist_object = artist
             else:
-                temp = create_artist(meta_artist)
-                p_note(f'NEW ARTIST with ID : {temp}')
+                artist_object = create_artist(meta_artist)
             # We are gonna create the artist!
+        
+        # Make albums
+        
+        if meta_album is None:
+            meta_album_id = None
+        else:
+            if meta_album in created_albums:
+                meta_album_id = created_albums[meta_album]
+            else:
+                # Create a new album
+                meta_album_id = create_album(name=meta_album, album_artist=artist_object, album_cover_copy=file_cover)
+                created_albums[meta_album] = meta_album_id
 
 
-
+        p_note(f'Meta album id: {meta_album_id}')
         # Add query to DB
         song = Song(title=meta_title,
                     # artist=None, # THIS LITTLE FUCKER WAS CAUSING THE OTHER ARTIST_ID TO OVERRIDE
-                    album=None,
+                    # album=None, # ALMOST FELL FOR THIS SHIT TWICE
                     length_in_sec=meta_duration_in_sec,
                     extension=extension,
                     file_name=filename_with_uuid,
                     user_id=current_user.id,
-                    artist_id=temp,
-                    album_id=0,
+                    artist=artist_object,
+                    album_id=meta_album_id,
                     file_cover=file_cover,
                     upload_session=upload_session_uuid
                     )
@@ -192,7 +204,6 @@ def upload_songs(files) -> None:
 
     return upload_session_uuid
 
-
 ############################################################
 # Route for seeing songs
 # Can get files from anyway and fill return upload session
@@ -202,6 +213,8 @@ def upload_songs(files) -> None:
 @bp_songs.route('/songs', methods=['GET', 'POST'])
 def songs():
     title = 'MusicDB :: Song list'
+    page = request.args.get('page', 1, type=int)
+    entries_per_page = 10
 
     if not current_user.is_authenticated:
         flash('Please login to start uploading.')
@@ -210,6 +223,7 @@ def songs():
     song_for_display = []
     class s():
         # General
+        id = None
         title = None
         album = None
         artist = None
@@ -227,13 +241,14 @@ def songs():
         url_to_album = None
         url_to_artist = None
     
-    songs_from_db = Song.query.all()
+    songs_from_db = Song.query.paginate(page=page, per_page=entries_per_page)
 
     for song in songs_from_db:
         temp = s()
 
         #GENERAL
-
+        
+        temp.id = song.id
         temp.title = song.title
         # TODO implement album
         temp.album = None
@@ -243,6 +258,16 @@ def songs():
 
 
         temp.length = sec_to_str(song.length_in_sec)
+
+        p_err(dir(song))
+        
+        if song.album:
+                if song.album.name:
+                    temp.album = song.album.name
+                else:
+                    temp.song = None
+        else:
+            temp.song = None
 
         # TODO implement favs
         temp.is_favorite = None
@@ -254,14 +279,23 @@ def songs():
             temp.cdn_song_file = url_for('utils.cdn_songs', filename=song.file_name)
 
         # TODO implement song page
-        temp.url_to_song = None
+        temp.url_to_song = f'/song/{song.id}'
+
         # TODO implement album page
-        temp.url_to_album = None
-        temp.url_to_artist = parse_artist_url(song.artist)
+        if song.album_id:
+            temp.url_to_album = f'/album/{song.album_id}'
+        else:
+            temp.url_to_album = None
+
+        # Artist page
+        if song.artist_id:
+            temp.url_to_artist = f'/artist/{song.artist_id}'
+        else:
+            temp.url_to_artist = None
 
         song_for_display.append(temp)
 
-    return render_template('songs.html', title=title, songs=song_for_display)
+    return render_template('songs.html', title=title, songs=song_for_display, paginate=songs_from_db)
 
 
 ############################################################
@@ -281,3 +315,159 @@ def sec_to_str(time: int) -> str:
     time = 5
     return f"{min}:{sec}"
 
+
+############################################################
+# API call to like user
+# IMPLEMENT
+############################################################
+@bp_songs.route("/likes", methods=['GET','POST'])
+def action_like_song():
+    clicked=None
+    if request.method == "POST":
+        print(request.get_data())
+        print(type(request.get_data()))
+        return 'hi'
+
+
+
+############################################################
+# User likes song
+############################################################
+def current_user_likes_song(song_id, user_id):
+    p_err('TEST')
+    like = UsersLikesSongs()
+    like.user_id = int(user_id)
+    like.song_id = int(song_id)
+    db.session.add(like)
+    db.session.commit()
+
+############################################################
+# Route for uploading songs
+# Can get files from anyway and fill return upload session
+# if any files got uploaded succesfull.
+# TODO BASICS, rewrite, split responsibilities
+############################################################
+@bp_songs.route('/song/<song_id>', methods=['GET', 'POST'])
+def song(song_id):
+
+    if not current_user.is_authenticated:
+        flash('Please login to start using this size.')
+        return redirect(url_for('users.login'))
+
+    # GENERAL FOR PAGE
+
+    # GET SONG OBJECT
+    song_from_db = Song.query.filter_by(id=song_id).first()
+    
+    if song_from_db is None:
+        return redirect(url_for('main.not_found'))
+
+
+    
+    title = f'MusicDB :: {song_from_db.title}'
+
+    # FORM DEFINITIONS
+    form = UpdateSong()
+
+    
+    form.alive.choices = ["True", "False"]
+
+    artist_choices = ['<unknown>']
+    all_artists_from_db = db.session.scalars(db.select(Artist.name)).all()
+    for a in all_artists_from_db:
+        artist_choices.append(a)
+    form.artist.choices = artist_choices
+
+    album_choices = ['<unknown>']
+    all_albums_from_db = Album.query.filter(Album.artist_id == song_from_db.artist_id).all()
+    for album in all_albums_from_db:
+        if album.name:
+            album_choices.append(album.name)
+        else:
+            # Niks?
+            pass
+    form.album.choices = album_choices
+
+
+    # POSTING
+    if form.validate_on_submit():
+        p_note('VALIDATED')
+        next_name = form.title.data
+        next_album = form.album.data
+        next_artist = form.artist.data
+        alive = form.alive.data
+
+        p_note(f'{next_name}, {next_album}, {next_artist}, {alive}')
+
+        artist_object = Artist.query.filter_by(name=next_artist).first()
+        album_object = Album.query.filter_by(name=next_album).first()
+        p_note(f'{artist_object}, {album_object}')
+        p_err(next_name)
+        song_from_db.title = next_name
+        if alive == 'True':
+            song_from_db.alive = True
+        else:
+            song_from_db.alive = False
+        
+        song_from_db.album = album_object
+
+        song_from_db.artist = artist_object
+
+        db.session.commit()
+
+    # FORM :: name
+    form.title.data = song_from_db.title
+
+    # FORM :: artist
+    artist_choices = ['<unknown>']
+    all_artists_from_db = db.session.scalars(db.select(Artist.name)).all()
+    for a in all_artists_from_db:
+        artist_choices.append(a)
+    form.artist.choices = artist_choices
+    if song_from_db.artist is not None:
+        form.artist.data = song_from_db.artist.name
+    else:
+        form.artist.data = '<unknown>'
+
+    # FORM :: album
+    album_choices = ['<unknown>']
+    all_albums_from_db = Album.query.filter(Album.artist_id == song_from_db.artist_id).all()
+    for album in all_albums_from_db:
+        if album.name:
+            album_choices.append(album.name)
+        else:
+            # Niks?
+            pass
+    form.album.choices = album_choices
+    if song_from_db.album is not None:
+        form.album.data = song_from_db.album.name
+    else:
+        form.album.data = '<unknown>'
+
+    # FORM :: alive
+    form.alive.choices = ["True", "False"]
+    if song_from_db.alive:
+        form.alive.data = "True"
+    else:
+        form.alive.data = "False"
+
+    # Get URL for filecover
+    if song_from_db.file_cover:
+        cover = url_for('utils.cdn_song_big', filename=song_from_db.file_cover)
+    else:
+        cover = None
+    
+
+
+
+    
+    return render_template('song.html', title=title, form=form, cover=cover, song=song_from_db)
+    
+
+@bp_songs.route('/song/remove/<id>', methods=['POST', 'GET'])
+def remove_song(id):
+
+    query = text(f'DELETE FROM song where id={id};')
+    db.session.execute(query)
+    db.session.commit()
+    return '204'

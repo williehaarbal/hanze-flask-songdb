@@ -1,10 +1,12 @@
-from musicdb.models import Artist
+import math
+from musicdb.models import Artist, Song
 from flask_login import current_user
 from markupsafe import Markup
 from sqlalchemy import func
 from musicdb import db, DEBUG
 from musicdb.general import country_icon_list, p_err, p_note
 from .forms import CreateArtist
+
 from typing import TypedDict
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 import hashlib
@@ -21,7 +23,8 @@ bp_artists = Blueprint('artists', __name__)
 def artist_list():
 
     if not current_user.is_authenticated:
-        redirect(url_for('main.home'))
+        flash('Please login to start using this part of the website...')
+        return redirect(url_for('users.login'))
 
     # General
     title = 'MusicDB :: artists'
@@ -108,7 +111,7 @@ def artist_list():
         name = artist.name
         safe_artist_name = (artist.name.replace(" ", "-").lower())
 
-        temp.url_to_artist = url_for('artists.artist', arg_artist=safe_artist_name)
+        temp.url_to_artist = url_for('artists.artist', arg_artist=artist.id)
 
         # TODO implement
         url_to_albums = None
@@ -130,12 +133,122 @@ def artist_list():
 ############################################################
 @bp_artists.route("/artist/<arg_artist>")
 def artist(arg_artist):
-    artist_object = db.session.query(Artist).filter(func.lower(Artist.name) == func.lower(arg_artist)).first()
-    if artist_object is None:
-        # trow 404
-        return '404'
-    print(artist_object)
-    return render_template('artist.html', artist=artist_object)
+
+    
+    page = request.args.get('page', 1, type=int)
+
+
+    artist_object = db.session.query(Artist).filter(Artist.id == arg_artist).first()
+
+    title = f'tit'
+
+    class artist_page():
+        name = None
+        description = None
+
+        # Images
+        band_cover = None
+        flag_svg = None
+
+        def __repr__(self) -> str:
+            return (f"ARTIST OBJECT :: band_cover:'{self.band_cover}', flag:'{self.flag_svg}'")
+
+    
+    new_page = artist_page()
+
+    #Name
+    new_page.name = artist_object.name
+
+    #Cover
+
+    if artist_object.band_cover:
+        new_page.band_cover = url_for('utils.cdn_band_picture', filename=artist_object.band_cover)
+    else:
+        new_page.band_cover = url_for('static', filename= 'img/unknown_band.jpg')
+
+    # FLAG
+    
+    if artist_object.country and not 'world':
+        short = country_icon_list[artist_object.country]
+        artist_page.flag_svg = url_for('utils.cdn_flags', filename=f'{short}.svg')
+    else:
+        artist_page.flag_svg = url_for('utils.cdn_flags', filename=f'xx.svg')
+
+    # Description
+    
+    new_page.description = Markup(artist_object.description)
+    
+
+
+
+    # START SONG
+    page = request.args.get('page', 1, type=int)
+    entries_per_page = 4
+
+    if not current_user.is_authenticated:
+        flash('Please login to start uploading.')
+        return redirect(url_for('users.login'))
+    
+    song_for_display = []
+    class s():
+        # General
+        id = None
+        title = None
+        album = None
+        artist = None
+        length = None
+        is_favorite = False
+        is_owner = True
+
+        # CDN
+        cdn_song_icon = None
+        cdn_song_file = None
+        # cdn_song_download = None # I think I can use the cdn_song_file for that, for now.
+
+        # URLs
+        url_to_song = None
+        url_to_album = None
+        url_to_artist = None
+    
+    songs_from_db = Song.query.filter_by(artist_id=artist_object.id).paginate(page=page, per_page=entries_per_page)
+
+    for song in songs_from_db:
+        temp = s()
+
+        #GENERAL
+        
+        temp.id = song.id
+        temp.title = song.title
+        # TODO implement album
+        temp.album = None
+        temp.artist = db.session.query(Artist.name).filter(Artist.id == song.artist_id).first()
+        if temp.artist:
+            temp.artist = temp.artist[0]
+
+
+        temp.length = sec_to_str(song.length_in_sec)
+
+        # TODO implement favs
+        temp.is_favorite = None
+
+        # CDN
+        if song.file_cover:
+            temp.cdn_song_icon = url_for('utils.cdn_song_icons', filename=song.file_cover)
+        if song.file_name:
+            temp.cdn_song_file = url_for('utils.cdn_songs', filename=song.file_name)
+
+        # TODO implement song page
+        temp.url_to_song = None
+        # TODO implement album page
+        temp.url_to_album = None
+        temp.url_to_artist = parse_artist_url(song.artist)
+
+        song_for_display.append(temp)
+    # END SONG
+    
+
+    p_err(new_page)
+    return render_template('artist.html', title=title, artist=new_page, songs=song_for_display, paginate=songs_from_db)
 
 
 ############################################################
@@ -184,8 +297,7 @@ def create_artist(name:str, **kwargs) -> int:
         if str(arg) == 'band_cover':
             band_cover = kwargs[arg]
     
-    print(f'This{band_cover}')
-        
+    # In case of outside runtime call
     from musicdb.models import Artist
     from musicdb import db, app
 
@@ -217,7 +329,7 @@ def create_artist(name:str, **kwargs) -> int:
         new_artist = Artist(name=name, country=country, band_cover=md5_and_extention, description=description)
         db.session.add(new_artist)
         db.session.commit()
-        return new_artist.id
+        return new_artist
 
 
 ############################################################
@@ -228,9 +340,39 @@ def parse_artist_url(artist: str) -> str:
     """
         'Some Band' -> 'some-band'
     """
-    p_err(artist)
     if artist is None:
         return None
     safe_artist_name = artist.name.replace(" ", "-").lower()
     return url_for('artists.artist', arg_artist=safe_artist_name)
 
+############################################################
+# FUNC :: parse artist name
+# TODO better save handling
+############################################################
+def parse_artist_url(artist: str) -> str:
+    """
+        'some-band' -> 'some band'
+    """
+    if artist is None:
+        return None
+    
+    safe_artist_name = artist.name.replace(" ", "-").lower()
+    return url_for('artists.artist', arg_artist=safe_artist_name)
+
+
+############################################################
+# Time in sec represented in a string format
+############################################################
+def sec_to_str(time: int) -> str:
+    if time == -1:
+        return 'E:RR'
+    
+    sec = time % 60
+    sec = math.floor(sec)
+    sec = str(sec).zfill(2)
+    min = math.floor(time / 60)
+
+
+
+    time = 5
+    return f"{min}:{sec}"

@@ -26,29 +26,33 @@ app.config['SONG_FOLDER'] = os.path.join(os.getcwd(), 'data', 'songs')
 app.config['SONG_COVERS_ICON'] = os.path.join(os.getcwd(), 'data', 'songs_covers_icon')
 app.config['PROFILE_PICTURE'] = os.path.join(os.getcwd(), 'data', 'profile_pictures')
 app.config['BAND_COVER'] = os.path.join(os.getcwd(), 'data', 'band_covers')
+app.config['ALBUM_COVER'] = os.path.join(os.getcwd(), 'data', 'album_covers')
+app.config['SONG_COVER'] = os.path.join(os.getcwd(), 'data', 'songs_covers')
 
 db = SQLAlchemy(model_class=Base)
 db.init_app(app)
 
 DEBUG = True
-logging.basicConfig()
-logger = logging.getLogger('sqlalchemy.engine')
-logger.setLevel(logging.INFO)
+# logging.basicConfig()
+# logger = logging.getLogger('sqlalchemy.engine')
+# logger.setLevel(logging.INFO)
 bcrypt = Bcrypt(app)
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'bp_users.login'
-login_manager.login_message_category = 'info'
+# login_manager.login_message_category = 'info'
 
 
 from musicdb.bp_users.routes import bp_users
 from musicdb.bp_songs.routes import bp_songs
+from musicdb.bp_albums.routes import bp_albums
 from musicdb.bp_utils.routes import bp_utils
 from musicdb.bp_main.routes import bp_main
 from musicdb.bp_artists.routes import bp_artists
 
 app.register_blueprint(bp_users)
 app.register_blueprint(bp_songs)
+app.register_blueprint(bp_albums)
 app.register_blueprint(bp_main)
 app.register_blueprint(bp_utils)
 app.register_blueprint(bp_artists)

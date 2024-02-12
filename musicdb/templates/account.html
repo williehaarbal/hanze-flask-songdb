@@ -83,7 +83,6 @@ hr {
 {% block content %}
 
 <br>
-{{ current_user.profile_picture  }}
 <br>
 
 <div class="grid-container">
@@ -101,7 +100,7 @@ hr {
                 {% if current_user.profile_picture == 'default.jpg' %}
                 <img src="{{ url_for('static', filename='img/default.jpg') }}" alt="default profile picture" style="width: 100%;">
                 {% else %}
-                <img src="{{ url_for('cdn_profile_picture', filename=current_user.profile_picture) }}" alt="profile picture" style="width: 100%;">
+                <img src="{{ url_for('utils.cdn_profile_picture', filename=current_user.profile_picture) }}" alt="profile picture" style="width: 100%;">
                 {% endif %}
             </div>
         </form>

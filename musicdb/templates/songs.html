@@ -155,7 +155,22 @@ a:hover {
     background: rgba(255, 255, 255, 0.3);
 }
 
+.custom-paginator a {
+    color: #fff;
+}
 
+.custom-paginator a:hover {
+    color: #f05740
+}
+
+.custom-paginator li:last-child a, .custom-paginator li:first-child a, .middle {
+    background-color: #f05740;
+}
+
+.custom-paginator li:last-child a:hover, .custom-paginator li:first-child a:hover, .middle:hover{
+    color: #000;
+    background-color: #c94d39;
+}
 
 </style>
 {% endblock %}
@@ -164,6 +179,33 @@ a:hover {
 {% block content %}
 
 <br>
+
+<div style="width: 100%; position: relative;">
+    <nav aria-label="Page navigation example" data-bs-theme="dark" style="position: absolute; left: 50%; transform: translateX(-50%);">
+        <ul class="pagination custom-paginator">
+            {% for page_num in paginate.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if paginate.page == page_num %}
+                <li class="page-item"><a class="page-link disabled" href="{{ url_for('songs.songs', page=page_num) }}">{{ page_num }}</a></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="{{ url_for('songs.songs', page=page_num) }}">{{ page_num }}</a></li>
+                {% endif %}
+                {% else %}
+                <li class="page-item page-link">...</li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+</div>
+
+
+
+<br>
+<br>
+<br>
+
+<h1>Song list</h1>
+
 
 {% for song in songs %}
 
@@ -181,22 +223,32 @@ a:hover {
     </div>
 
     <div class="song-object-title left-padding">
-        <a href="#">
+        <a href="{{ song.url_to_song }}">
             <div class="vertical-center overflow-hidden">{{ song.title }}</div>
         </a>
     </div>
 
     <div class="song-object-artist left-padding">
+        
+        {% if song.artist %}
         <a href="{{ song.url_to_artist }}">
-            <div class="vertical-center overflow-hidden">{{ song.artist }}</div>
+            <div  class="vertical-center overflow-hidden">{{ song.artist }}</div>
         </a>
+
+        {% else %}
+        <div style="color: rgb(99, 99, 99)" class="vertical-center overflow-hidden">no artist</div>
+        {% endif %}
     </div>
 
     <div class="song-object-album">
-        <a href="{{ song.url_to_album }}">
-            <div class="vertical-center overflow-hidden">{{ song.album }}</div>
-        </a>
-        
+        {% if song.album %}
+            <a href="{{ song.url_to_album }}">
+                <div class="vertical-center overflow-hidden">{{ song.album }}</div>
+            </a>
+        {% else %}
+            <div style="color: rgb(99, 99, 99)" class="vertical-center overflow-hidden">No album</div>
+        {% endif %}
+
     </div>
     <div class="song-object-play">
         <!-- Gotta say; this media player is awesome -->
@@ -207,7 +259,7 @@ a:hover {
 
     <div class="song-object-download">
         <a href="{{ song.cdn_song_file }}" download>
-            <img src="{{ url_for('static', filename='icons/cloud-arrow-down-fill.svg')}}" alt="favorite">
+                <img src="{{ url_for('static', filename='icons/cloud-arrow-down-fill.svg')}}" alt="favorite">
         </a>
     </div>
 
@@ -218,7 +270,9 @@ a:hover {
         {% if song.is_favorite %}
             <img src="{{ url_for('static', filename='icons/star-fill.svg')}}" alt="favorite">
         {% else %}
-        <img src="{{ url_for('static', filename='icons/star.svg')}}" alt="favorite">
+            <span id="song-{{ song.id }}" onclick="performLike(this.id)">
+                <img src="{{ url_for('static', filename='icons/star.svg')}}" alt="favorite">
+            </span>
         {% endif %}
     </div>
     <div class="song-object-time">
@@ -227,8 +281,32 @@ a:hover {
     <div class="song-object-goto">
     </div>
 
-    
 </div>
+
 {% endfor %}
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+<script>
+function performLike(number) {
+    $.ajax({
+            type: "POST",
+            contentType: "application/json",
+            headers: {                                  
+                'Accept': 'application/json',
+                'Content-Type': 'application/json' 
+            },
+            url: "/likes",
+            dataType: 'json',
+            data: {"data": number}
+        })
+}
+</script>
+
 <script src="{{ url_for('static', filename='js/essential_audio.js')}}"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
 {% endblock %}

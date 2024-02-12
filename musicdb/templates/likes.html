@@ -1,0 +1,31 @@
+<!-- What to extend, it this case, our base template -->
+{% extends "base.html" %}
+
+<!-- Extra markup that goes in <head> -->
+{% block head %}
+  {{ super() }}
+<style>
+    p {
+        color: white;
+        font-family: "Open Sans", sans-serif;
+        
+    }
+</style>
+{% endblock %}
+
+<!-- Homepage content -->
+{% block content %}
+
+<h1>LIKES</h1>
+{{ current_user }}
+
+<br>
+
+{% for l in likes %}
+<P>{{ l }}</P>
+
+{% endfor %}
+ 
+
+
+{% endblock %}

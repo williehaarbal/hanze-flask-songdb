@@ -61,7 +61,7 @@ class Song(db.Model):
     liked_users: Mapped[List["UsersLikesSongs"]] = relationship(back_populates="song")
 
     def __repr__(self):
-        return f"Song :: ('{self.id}', '{self.title}', '{self.user}')"
+        return f"Song :: ('{self.id}', '{self.title}', '{self.user}, ALBUM:: {self.album}')"
     
 
 class Album(db.Model):
@@ -83,7 +83,7 @@ class Album(db.Model):
     artist: Mapped["Artist"] = relationship(back_populates="album")
 
     def __repr__(self):
-        return f"Album :: ('{self.id}', '{self.artist}')"
+        return f"Album :: ('{self.id}', {self.name}, '{self.artist}')"
 
 
 class Artist(db.Model):

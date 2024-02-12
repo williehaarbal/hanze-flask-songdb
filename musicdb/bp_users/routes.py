@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, url_for, flash, redirect, request
+from sqlalchemy import text
 from musicdb import app, bcrypt, db
+from musicdb.general import p_err
 from .forms import RegistrationForm, LoginForm, UpdateAccount, UpdatePicture, UpdateAuth, DeleteAccount
 from musicdb.models import User
 from flask_login import login_user, current_user, logout_user
@@ -133,3 +135,17 @@ def account():
 @bp_users.route("/profile")
 def profile():
     return 'profile'
+
+@bp_users.route("/likes")
+def likes():
+    query = text('SELECT * FROM view_user_likes_song;')
+    answer = db.session.execute(query)
+
+    temp=[]
+
+    for x in answer:
+        temp.append(f'{x[0]} likes {x[1]}')
+
+    p_err(temp)
+
+    return render_template('likes.html', likes=temp)
