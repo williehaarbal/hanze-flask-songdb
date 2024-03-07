@@ -38,3 +38,10 @@ def cdn_band_picture(filename):
 @bp_utils.route('/cdn/st/<path:filename>')
 def cdn_flags(filename):
     return send_from_directory(app.static_folder, f'flags/{filename}')
+
+
+# STATIC DATA :: SONGS
+# CDN path is what user sees in browser!
+@bp_utils.route('/cdn/sn/<path:filename>')
+def cdn_album_cover(filename):
+    return send_from_directory(app.config['ALBUM_COVER'], filename)

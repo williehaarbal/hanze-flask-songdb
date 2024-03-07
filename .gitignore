@@ -26,3 +26,5 @@ app/__pycache__/
 app/sql/__pycache__/
 
 code.txt
+
+data/*

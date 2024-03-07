@@ -278,10 +278,8 @@ def songs():
         if song.file_name:
             temp.cdn_song_file = url_for('utils.cdn_songs', filename=song.file_name)
 
-        # TODO implement song page
-        temp.url_to_song = f'/song/{song.id}'
 
-        # TODO implement album page
+        temp.url_to_song = f'/song/{song.id}'
         if song.album_id:
             temp.url_to_album = f'/album/{song.album_id}'
         else:
@@ -342,13 +340,77 @@ def current_user_likes_song(song_id, user_id):
     db.session.commit()
 
 ############################################################
+# REQUIREMENTS:
+# Show info about a song.
+# Play the song
+# Download song
+
+# Link to -> edit song
+# Link to -> artist
+# Link to -> album
+
+# TODO:
+# Code cleanup
+# Write proper doc file
+############################################################
+@bp_songs.route('/song/<song_id>', methods=['GET', 'POST'])
+def song(song_id):
+
+    if not current_user.is_authenticated:
+        flash('Please login to start using this size.')
+        return redirect(url_for('users.login'))
+
+    # GET SONG OBJECT
+    song_from_db = Song.query.filter_by(id=song_id).first()
+    
+    if song_from_db is None:
+        return redirect(url_for('main.not_found'))
+
+
+    # GENERAL :: title
+    title = f'MusicDB :: {song_from_db.title}'
+
+    # FORM DEFINITIONS
+    form = UpdateSong()
+
+    class song():
+        name = song_from_db.title
+        cover = song_from_db.file_cover
+        
+    
+    form.alive.choices = ["True", "False"]
+
+    artist_choices = ['<unknown>']
+    all_artists_from_db = db.session.scalars(db.select(Artist.name)).all()
+    for a in all_artists_from_db:
+        artist_choices.append(a)
+    form.artist.choices = artist_choices
+
+    album_choices = ['<unknown>']
+    all_albums_from_db = Album.query.filter(Album.artist_id == song_from_db.artist_id).all()
+    for album in all_albums_from_db:
+        if album.name:
+            album_choices.append(album.name)
+        else:
+            # Niks?
+            pass
+    form.album.choices = album_choices
+
+
+
+
+
+    
+    return render_template('song.html', title=title, form=form, song=song)
+
+############################################################
 # Route for uploading songs
 # Can get files from anyway and fill return upload session
 # if any files got uploaded succesfull.
 # TODO BASICS, rewrite, split responsibilities
 ############################################################
-@bp_songs.route('/song/<song_id>', methods=['GET', 'POST'])
-def song(song_id):
+@bp_songs.route('/song/<song_id>/edit', methods=['GET', 'POST'])
+def song_edit(song_id):
 
     if not current_user.is_authenticated:
         flash('Please login to start using this size.')

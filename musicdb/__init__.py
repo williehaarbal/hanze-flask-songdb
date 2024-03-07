@@ -1,3 +1,4 @@
+import faulthandler
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
@@ -56,3 +57,7 @@ app.register_blueprint(bp_albums)
 app.register_blueprint(bp_main)
 app.register_blueprint(bp_utils)
 app.register_blueprint(bp_artists)
+
+# TODO More robuust error handling
+# For now error pages are stored in default routes.py file.
+from .routes import *
