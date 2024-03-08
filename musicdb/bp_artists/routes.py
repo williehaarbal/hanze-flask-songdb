@@ -47,6 +47,7 @@ def artist_list():
         url_to_artist = None
         url_to_albums = None
         url_to_songs = None
+        
 
         def __repr__(self) -> str:
             return f"TEMP ARTIST OBJECT :: {self.name}, {self.country_icon}, {self.description}, {self.cover_img}, {self.amount_songs}, {self.amount_albums}, {self.url_to_artist}, {self.url_to_albums}, {self.url_to_songs}"
@@ -138,45 +139,44 @@ def artist(arg_artist):
     page = request.args.get('page', 1, type=int)
 
 
-    artist_object = db.session.query(Artist).filter(Artist.id == arg_artist).first()
+    artist_retrieved_from_database = db.session.query(Artist).filter(Artist.id == arg_artist).first()
 
-    title = f'tit'
+    title = f'MusicDB :: {artist_retrieved_from_database.name}'
 
-    class artist_page():
+    class artist_container():
+        # General
         name = None
         description = None
 
-        # Images
+        # CDN
         band_cover = None
         flag_svg = None
 
         def __repr__(self) -> str:
             return (f"ARTIST OBJECT :: band_cover:'{self.band_cover}', flag:'{self.flag_svg}'")
 
-    
-    new_page = artist_page()
-
     #Name
-    new_page.name = artist_object.name
+    artist_container.name = artist_retrieved_from_database.name
 
     #Cover
 
-    if artist_object.band_cover:
-        new_page.band_cover = url_for('utils.cdn_band_picture', filename=artist_object.band_cover)
+    if artist_retrieved_from_database.band_cover:
+        artist_container.band_cover = url_for('utils.cdn_band_picture', filename=artist_retrieved_from_database.band_cover)
     else:
-        new_page.band_cover = url_for('static', filename= 'img/unknown_band.jpg')
+        artist_container.band_cover = url_for('static', filename= 'img/unknown_band.jpg')
 
     # FLAG
+    p_err(artist_retrieved_from_database.country)
     
-    if artist_object.country and not 'world':
-        short = country_icon_list[artist_object.country]
-        artist_page.flag_svg = url_for('utils.cdn_flags', filename=f'{short}.svg')
+    if artist_retrieved_from_database.country and artist_retrieved_from_database.country is not 'world':
+        short = artist_retrieved_from_database.country
+        artist_container.flag_svg = url_for('utils.cdn_flags', long_country_name=short)
     else:
-        artist_page.flag_svg = url_for('utils.cdn_flags', filename=f'xx.svg')
+        artist_container.flag_svg = url_for('utils.cdn_flags', long_country_name=f'world')
 
     # Description
     
-    new_page.description = Markup(artist_object.description)
+    artist_container.description = Markup(artist_retrieved_from_database.description)
     
 
 
@@ -210,7 +210,7 @@ def artist(arg_artist):
         url_to_album = None
         url_to_artist = None
     
-    songs_from_db = Song.query.filter_by(artist_id=artist_object.id).paginate(page=page, per_page=entries_per_page)
+    songs_from_db = Song.query.filter_by(artist_id=artist_retrieved_from_database.id).paginate(page=page, per_page=entries_per_page)
 
     for song in songs_from_db:
         temp = s()
@@ -236,6 +236,7 @@ def artist(arg_artist):
             temp.cdn_song_icon = url_for('utils.cdn_song_icons', filename=song.file_cover)
         if song.file_name:
             temp.cdn_song_file = url_for('utils.cdn_songs', filename=song.file_name)
+        
 
         # TODO implement song page
         temp.url_to_song = None
@@ -247,8 +248,8 @@ def artist(arg_artist):
     # END SONG
     
 
-    p_err(new_page)
-    return render_template('artist.html', title=title, artist=new_page, songs=song_for_display, paginate=songs_from_db)
+    p_err(artist_container.flag_svg)
+    return render_template('artist.html', title=title, artist=artist_container, songs=song_for_display, paginate=songs_from_db)
 
 
 ############################################################

@@ -35,9 +35,22 @@ def cdn_band_picture(filename):
 
 # STATIC DATA :: SONGS
 # CDN path is what user sees in browser!
-@bp_utils.route('/cdn/st/<path:filename>')
-def cdn_flags(filename):
-    return send_from_directory(app.static_folder, f'flags/{filename}')
+@bp_utils.route('/cdn/st/<path:long_country_name>')
+def cdn_flags(long_country_name):
+    country_icon_list = {
+        'Netherlands': 'nl',
+        'Germany': 'de',
+        'United Kingdom': 'gb',
+        'Sweden': 'se',
+        'Poland': 'pl',
+        'Belgium': 'be',
+        'USA': 'us',
+        'France': 'fr',
+        'world': 'xx',
+        'Other': None
+    }
+
+    return send_from_directory(app.static_folder, f'flags/{country_icon_list[long_country_name]}.svg')
 
 
 # STATIC DATA :: SONGS

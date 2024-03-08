@@ -35,3 +35,8 @@ def error_404(error):
 @app.errorhandler(500)
 def error_500(error):
     return render_template('errors/500.html'), 500
+
+
+@app.route('/hi')
+def testtest():
+    return 'hi'

@@ -4,35 +4,124 @@
 <!-- Extra markup that goes in <head> -->
 {% block head %}
 {{ super() }}
+<!-- CSS for audio player -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/essential_audio.css') }}"></link>
 
 <style>
 
-.content-container {
+.parent {
+    border-radius: 25px;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.top-parent {
     display: grid;
-    grid-template-columns: auto auto;
-    grid-template-rows: auto auto;
+    grid-template-columns: minmax(150px, 10%) 90%;
 }
 
-.content-top-left {
-    width: 60%;
-    background-color: red;
+.top-left {
+    grid-column: 0 / 1;
+    padding: 0;
+    border-radius: 0 0 25px 0;
+    overflow: hidden;
 }
 
-.content-top-right {
-    width: 40%;
-    background-color: blue;
+.bottom-parent {
+    display: grid;
+    grid-template-columns: auto fit-content(10%) fit-content(10%) fit-content(10%);
 }
 
-.content-bottom-left {
-    width: 40%;
-    background-color: green;
+.bottom-player {
+    padding-left: 20px;
+    padding-right: 20px;
+    height: 100%;
+    overflow: hidden;
 }
 
-.content-bottom-right {
-    width: 60%;
-    background-color: yellow;
+.bottom-player .essential_audio {
+    height: 100%;
+    width: 100%;
+    top: 50%;
 }
 
+.bottom-parent .right-button {
+    padding: 0;
+}
+
+.title {
+    padding-top: 20px;
+    color: rgba(255, 255, 255, 1);
+    font-family: 'Open Sans', sans-serif;
+    font-size: 3rem;
+    display: inline;
+    width: fit-content;
+}
+
+.length {
+    display: inline;
+    width: fit-content;
+    position: relative;
+    bottom: 2px;
+}
+
+.length span {
+    color: rgba(200, 200, 200, 1);
+    font-family: 'Open Sans', sans-serif;
+    position: absolute;
+    bottom: 20%;
+}
+
+.album {
+    font-size: 1.2rem; 
+    color: rgba(200, 200, 200, 1);
+    font-family: 'Open Sans', sans-serif;
+
+}
+
+.bottom-favorite {
+    width: 40px;
+    position: relative;
+}
+
+.bottom-favorite a {
+    position: absolute;
+    left: 50%;
+    top: 2px;
+    transform: translateX(-40%) scale(2, 2);
+    filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(298deg) brightness(103%) contrast(102%);
+    padding-right: 10px;
+}
+
+
+
+.artist {
+    font-size: 1.3rem; 
+    color: rgba(155, 150, 150, 1);
+    font-family: 'Open Sans', sans-serif;
+    display: inline;
+    width: fit-content;
+}
+
+a, a:hover, a:active, a:visited {
+    color: white;
+    text-decoration: none;
+}
+
+.flag {
+    height: 1.5rem;
+    display: inline;
+    width: fit-content;
+    position: relative;
+    top: 1px;
+    padding: 0;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.artist-link {
+    width: fit-content;
+}
 
 </style>
 
@@ -45,29 +134,62 @@
 <br>
 <br>
 
-<div class="content-container">
-    <div class="content-top-left">
-        top left
+<div class="container parent">
+    <div class="row top-parent">
+        <div class="top-left">
+            <img src="{{ song.cdn_song_icon }}" style="width: 100%;" alt="">
+        </div>
+        <div>
+            <div class="container">
+                <div class="row">
+                    <h1 class="title">{{ song.title }}</h1>
+                    <div class="length"><span>({{ song.length }})</span></div>
+                </div>
+                <div class="row">
+                    <a href="{{ song.url_to_album }}"><h2 class="album">{{ song.album }}</h2></a>
+                </div>
+                <div class="row">
+                    <a class="artist-link" href="{{ song.url_to_artist }}"><h2 class="artist">{{ song.artist }}</h2></a>
+                    <img class="flag" src="{{ song.cdn_artist_country_flag }}" alt="country_flag">
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="content-top-right">
-        top right
+    <div class="row bottom-parent">
+        <!-- Player -->
+        <div class="bottom-player">
+            <div class="essential_audio vertical-center " data-url="{{ song.cdn_song_file }}"></div>
+        </div>
+        <!-- Favorite -->
+        <div class="right-button bottom-favorite">
+            {% if song.favorite == True %}
+                <a href="{{ song.url_to_unlike }}"><img src="{{ url_for('static', filename='icons/star-fill.svg') }}" alt=""></a>
+            {% else %}
+                <a href="{{ song.url_to_like }}"><img src="{{ url_for('static', filename='icons/star.svg') }}" alt=""></a>
+            {% endif %}
+        </div>
+        <!-- Download -->
+        <div class="right-button bottom-download">
+            <a href="{{ song.cdn_song_file }}" download="{{ song.cdn_song_file }}"><button class="btn btn-success">Download</button></a>
+        </div >
+        <!-- Edit -->
+        <div class="right-button bottom-edit">
+            <a href="{{ song.url_to_edit }}"><button class="btn btn-success">Edit</button></a>
+        </div>
     </div>
-    <div class="content-bottom-left">
-        bottom left
-    </div>
-    <div class="content-bottom-right">
-        bottom right
-    </div>
+
 </div>
 
 <br>
 <br>
 <br>
+<br>    
 <br>
 <br>
 <br>
 <br>
 <br>
 <br>
-<br>
+<script src="{{ url_for('static', filename='js/essential_audio.js')}}"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
 {% endblock %}

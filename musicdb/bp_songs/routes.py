@@ -3,11 +3,12 @@ from sqlalchemy import func, text
 from werkzeug.utils import secure_filename
 from musicdb.bp_albums.routes import create_album
 from musicdb.bp_artists.routes import create_artist, parse_artist_url
+from musicdb.bp_utils.func import sec_to_str
 from musicdb.models import Album, Artist, Song, UsersLikesSongs
 from flask_login import current_user
 from musicdb import app, db
 from musicdb.general import p_err, p_note
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from .forms import UpdateSong, UploadForm
 from PIL import Image
 import hashlib
@@ -228,7 +229,7 @@ def songs():
         album = None
         artist = None
         length = None
-        is_favorite = False
+        favorite = None
         is_owner = True
 
         # CDN
@@ -258,8 +259,6 @@ def songs():
 
 
         temp.length = sec_to_str(song.length_in_sec)
-
-        p_err(dir(song))
         
         if song.album:
                 if song.album.name:
@@ -270,7 +269,16 @@ def songs():
             temp.song = None
 
         # TODO implement favs
-        temp.is_favorite = None
+        # Is favorite
+        p_err(current_user.id)
+        p_err(temp.id)
+        p_note(UsersLikesSongs.query.filter_by(user_id=current_user.id, song_id=temp.id).first())
+        if UsersLikesSongs.query.filter_by(user_id=current_user.id, song_id=temp.id).first() is None:
+            temp.favorite = False
+        else:
+            temp.favorite = True
+        
+        
 
         # CDN
         if song.file_cover:
@@ -292,116 +300,122 @@ def songs():
             temp.url_to_artist = None
 
         song_for_display.append(temp)
+        
+    for i in song_for_display:
+        p_note(i.favorite)
 
     return render_template('songs.html', title=title, songs=song_for_display, paginate=songs_from_db)
 
 
 ############################################################
-# Time in sec represented in a string format
+# REDIRECT :: Like song by user
 ############################################################
-def sec_to_str(time: int) -> str:
-    if time == -1:
-        return 'E:RR'
-    
-    sec = time % 60
-    sec = math.floor(sec)
-    sec = str(sec).zfill(2)
-    min = math.floor(time / 60)
-
-
-
-    time = 5
-    return f"{min}:{sec}"
-
-
-############################################################
-# API call to like user
-# IMPLEMENT
-############################################################
-@bp_songs.route("/likes", methods=['GET','POST'])
-def action_like_song():
-    clicked=None
-    if request.method == "POST":
-        print(request.get_data())
-        print(type(request.get_data()))
-        return 'hi'
-
-
-
-############################################################
-# User likes song
-############################################################
-def current_user_likes_song(song_id, user_id):
-    p_err('TEST')
+@bp_songs.route("/song/<song_id>/like", methods=['GET','POST'])
+def action_like_song(song_id):
     like = UsersLikesSongs()
-    like.user_id = int(user_id)
+    like.user_id = int(current_user.id)
     like.song_id = int(song_id)
     db.session.add(like)
     db.session.commit()
+    return redirect(f'/song/{song_id}')
 
 ############################################################
-# REQUIREMENTS:
-# Show info about a song.
-# Play the song
-# Download song
+# REDIRECT :: Unlike song by user
+############################################################
+@bp_songs.route("/song/<song_id>/unlike", methods=['GET','POST'])
+def action_unlike_song(song_id):
+    
+    response = UsersLikesSongs.query.filter_by(user_id=current_user.id, song_id=song_id).all()
+    for r in response:
+        db.session.delete(r)
+    db.session.commit()
+    return redirect(f'/song/{song_id}')
 
-# Link to -> edit song
-# Link to -> artist
-# Link to -> album
-
-# TODO:
-# Code cleanup
-# Write proper doc file
+############################################################
+# ROUTE :: Song
 ############################################################
 @bp_songs.route('/song/<song_id>', methods=['GET', 'POST'])
 def song(song_id):
 
+    # If the current user isn't authenticated (anonymouse), then redirect him/her to login page.
     if not current_user.is_authenticated:
-        flash('Please login to start using this size.')
+        flash('Please login to access songs...')
         return redirect(url_for('users.login'))
 
-    # GET SONG OBJECT
-    song_from_db = Song.query.filter_by(id=song_id).first()
-    
-    if song_from_db is None:
-        return redirect(url_for('main.not_found'))
-
+    # Get some object from database
+    song_retrieved_from_database = Song.query.filter_by(id=song_id).first()
+    # If song not found, throw an error
+    # TODO Is this proper error handing here?
+    if song_retrieved_from_database is None:
+        abort(500)
 
     # GENERAL :: title
-    title = f'MusicDB :: {song_from_db.title}'
+    title = f'MusicDB :: {song_retrieved_from_database.title}'
 
-    # FORM DEFINITIONS
-    form = UpdateSong()
-
-    class song():
-        name = song_from_db.title
-        cover = song_from_db.file_cover
+    # A class that acts as a container to hold info over a song (single object = single song)
+    class song_container():
+        # General
+        title = None
+        artist = None
+        album = None
+        length = None
+        favorite = None
         
+        # CDN
+        cdn_song_file = None
+        cdn_song_cover = None
+        cdn_artist_country_flag = None
+        
+        # URLs
+        url_to_artist = None
+        url_to_album = None
+        url_to_edit = None
+        url_to_like = None
+        url_to_unlike = None
+        
+    # Get title
+    song_container.title = song_retrieved_from_database.title
+    # Get artist
+    if song_retrieved_from_database.artist:
+        song_container.artist = song_retrieved_from_database.artist.name
+    # Get album
+    if song_retrieved_from_database.album:
+        song_container.album = song_retrieved_from_database.album.name
+    # Get length
+    if song_retrieved_from_database.length_in_sec:
+        song_container.length = sec_to_str(song_retrieved_from_database.length_in_sec)
+        
+        
+    # Is favorite
+    if UsersLikesSongs.query.filter_by(user_id=current_user.id, song_id=song_retrieved_from_database.id).first() is None:
+        song_container.favorite = False
+    else:
+        song_container.favorite = True
     
-    form.alive.choices = ["True", "False"]
+    # Get song cover
+    if song_retrieved_from_database.file_cover:
+        song_container.cdn_song_icon = url_for('utils.cdn_song_icons', filename=song_retrieved_from_database.file_cover)
+    # Get music file
+    if song_retrieved_from_database.file_name:
+        song_container.cdn_song_file = url_for('utils.cdn_songs', filename=song_retrieved_from_database.file_name)
+    # Get country flag
+    if song_retrieved_from_database.artist.country:
+        p_note('trigger')
+        song_container.cdn_artist_country_flag = url_for('utils.cdn_flags', long_country_name=song_retrieved_from_database.artist.country)
+    else:
+        song_container.cdn_artist_country_flag = url_for('utils.cdn_flags', long_country_name='world')
+    # URL to edit
+    song_container.url_to_edit = f'/song/{song_retrieved_from_database.id}/edit'
+    # URL to artist
+    song_container.url_to_artist = f'/artist/{song_retrieved_from_database.artist_id}'
+    # URL to album
+    song_container.url_to_album = f'/album/{song_retrieved_from_database.album_id}'
+    # URL to like
+    song_container.url_to_like = f'/song/{song_retrieved_from_database.id}/like'
+    # URL to unlike
+    song_container.url_to_unlike = f'/song/{song_retrieved_from_database.id}/unlike'
 
-    artist_choices = ['<unknown>']
-    all_artists_from_db = db.session.scalars(db.select(Artist.name)).all()
-    for a in all_artists_from_db:
-        artist_choices.append(a)
-    form.artist.choices = artist_choices
-
-    album_choices = ['<unknown>']
-    all_albums_from_db = Album.query.filter(Album.artist_id == song_from_db.artist_id).all()
-    for album in all_albums_from_db:
-        if album.name:
-            album_choices.append(album.name)
-        else:
-            # Niks?
-            pass
-    form.album.choices = album_choices
-
-
-
-
-
-    
-    return render_template('song.html', title=title, form=form, song=song)
+    return render_template('song.html', title=title, song=song_container)
 
 ############################################################
 # Route for uploading songs
@@ -523,7 +537,7 @@ def song_edit(song_id):
 
 
     
-    return render_template('song.html', title=title, form=form, cover=cover, song=song_from_db)
+    return render_template('song_edit.html', title=title, form=form, cover=cover, song=song_from_db)
     
 
 @bp_songs.route('/song/remove/<id>', methods=['POST', 'GET'])

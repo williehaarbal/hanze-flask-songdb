@@ -267,7 +267,7 @@ a:hover {
         
     </div>
     <div class="song-object-fav">
-        {% if song.is_favorite %}
+        {% if song.favorite %}
             <img src="{{ url_for('static', filename='icons/star-fill.svg')}}" alt="favorite">
         {% else %}
             <span id="song-{{ song.id }}" onclick="performLike(this.id)">
