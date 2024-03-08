@@ -5,6 +5,7 @@ from musicdb.bp_albums.routes import create_album
 from musicdb.bp_artists.routes import create_artist, parse_artist_url
 from musicdb.bp_utils.func import sec_to_str
 from musicdb.models import Album, Artist, Song, UsersLikesSongs
+from .func import generate_song_list
 from flask_login import current_user
 from musicdb import app, db
 from musicdb.general import p_err, p_note
@@ -216,6 +217,8 @@ def songs():
     
     # GENERAL :: page title
     title = 'MusicDB :: Song list'
+    # GENERAL :: Current page
+    current_page = request.url
     
     # Pagination settings
     page = request.args.get('page', 1, type=int)
@@ -226,96 +229,14 @@ def songs():
         flash('Please login to start using this functionality.')
         return redirect(url_for('users.login'))
     
-    
-    class Song_info_container():
-        # General
-        id = None
-        title = None
-        album = None
-        artist = None
-        length = None
-        favorite = None
-        is_owner = False # TODO Not implemented yet
-
-        # CDN
-        # (These are 'links' the browser can interpret to get files likes images, the mp3s and suchs)
-        cdn_song_icon = None
-        cdn_song_file = None
-
-        # URLs
-        # Links to other pages that relate to this song
-        url_to_song = None
-        url_to_album = None
-        url_to_artist = None
-        url_to_like = None
-        url_to_unlike = None
-        
-    # Holds all the song objects in an list that will be able to be looped over with Flask render_template.
-    song_for_display = []
-    
-    # Get a list up to 10 songs (by paginate & that are 'alive' / not deleted).
+    # Get songs to display for this page.
+    # Also use filter to filter out which songs (for example liked songs, or certain name)
     songs_retrieved_from_database = Song.query.filter(Song.alive==True).paginate(page=page, per_page=entries_per_page)
 
-    for song in songs_retrieved_from_database:
-        
-        # Because this is a collection of multiple songs we create objects instead of using the class to hold our information.
-        song_object = Song_info_container()
+    # Code reuse for generating song_list.
+    songs, paginate = generate_song_list(page=page, entries_per_page=entries_per_page, songs_retrieved_from_database=songs_retrieved_from_database, current_page=current_page)
 
-        # Get song id
-        song_object.id = song.id
-        # Get title
-        song_object.title = song.title
-        # Get artist
-        if song.artist:
-            song_object.artist = song.artist.name
-        else:
-            song_object.artist = "Unknown artist"
-        # Get album
-        if song.album:
-            song_object.album = song.album.name
-        else:
-            song_object.album = "Unknown album"
-        # Get the length of the song
-        song_object.length = sec_to_str(song.length_in_sec)
-        # Is favorite
-        if UsersLikesSongs.query.filter_by(user_id=current_user.id, song_id=song.id).first() is None:
-            song_object.favorite = False
-        else:
-            song_object.favorite = True
-    
-        # CDN
-        # Get song cover
-        if song.file_cover:
-            song_object.cdn_song_icon = url_for('utils.cdn_song_icons', filename=song.file_cover)
-        if song.file_name:
-        # Get music file
-            song_object.cdn_song_file = url_for('utils.cdn_songs', filename=song.file_name)
-
-        # URL to song
-        song_object.url_to_song = f'/song/{song.id}'
-        # URL to artist
-        song_object.url_to_artist = f'/artist/{song.artist_id}'
-        # URL to album
-        song_object.url_to_album = f'/album/{song.album_id}'
-        
-        # Get the URL of the current page. If a user 'likes' or 'unlikes' a song, it calls a route that handles liking/unliking. Then redirects to the page it was already on. (refreshes for updates page.) Very hacky. Works somehow like a charm.
-        # Done this way so you can like/unlike from multiple different pages.
-        current_page = request.url
-        
-        # URL to like
-        # Passes the current page as a argument
-        song_object.url_to_like = f'/song/{song_object.id}/like?current_page={current_page}'
-        # URL to unlike
-        # Passes the current page as a argument
-        song_object.url_to_unlike = f'/song/{song_object.id}/unlike?current_page={current_page}'
-
-        song_for_display.append(song_object)
-        
-        
-    for i in song_for_display:
-        p_note(i.favorite)
-
-    return render_template('songs.html', title=title, songs=song_for_display, paginate=songs_retrieved_from_database)
+    return render_template('songs.html', title=title, songs=songs, paginate=paginate)
 
 ############################################################
 # REDIRECT :: Like song by user
@@ -437,10 +358,7 @@ def song(song_id):
     return render_template('song.html', title=title, song=song_container)
 
 ############################################################
-# Route for uploading songs
-# Can get files from anyway and fill return upload session
-# if any files got uploaded succesfull.
-# TODO BASICS, rewrite, split responsibilities
+# ROUTE :: Edit song
 ############################################################
 @bp_songs.route('/song/<song_id>/edit', methods=['GET', 'POST'])
 def song_edit(song_id):
@@ -559,6 +477,9 @@ def song_edit(song_id):
     return render_template('song_edit.html', title=title, form=form, cover=cover, song=song_from_db)
     
 
+############################################################
+# API CALL :: Delete song
+############################################################
 @bp_songs.route('/song/remove/<id>', methods=['POST', 'GET'])
 def remove_song(id):
     query = text(f'DELETE FROM song where id={id};')
@@ -575,6 +496,8 @@ def likes():
     
     # GENERAL :: page title
     title = 'MusicDB :: liked songs'
+    # GENERAL :: Current page
+    current_page = request.url
     
     # Pagination settings
     page = request.args.get('page', 1, type=int)
@@ -584,34 +507,7 @@ def likes():
     if not current_user.is_authenticated:
         flash('Please login to start using this functionality.')
         return redirect(url_for('users.login'))
-    
-    
-    class Song_info_container():
-        # General
-        id = None
-        title = None
-        album = None
-        artist = None
-        length = None
-        favorite = None
-        is_owner = False # TODO Not implemented yet
 
-        # CDN
-        # (These are 'links' the browser can interpret to get files likes images, the mp3s and suchs)
-        cdn_song_icon = None
-        cdn_song_file = None
-
-        # URLs
-        # Links to other pages that relate to this song
-        url_to_song = None
-        url_to_album = None
-        url_to_artist = None
-        url_to_like = None
-        url_to_unlike = None
-        
-    # Holds all the song objects in an list that will be able to be looped over with Flask render_template.
-    song_for_display = []
-    
     # Get a list up to 10 songs (by paginate & that are 'alive' / not deleted).
     songs_retrieved_from_database = Song.query.filter(
         Song.alive==True,
@@ -619,63 +515,7 @@ def likes():
         UsersLikesSongs.song_id==Song.id
         ).paginate(page=page, per_page=entries_per_page)
 
-    for song in songs_retrieved_from_database:
-        
-        # Because this is a collection of multiple songs we create objects instead of using the class to hold our information.
-        song_object = Song_info_container()
-
-        # Get song id
-        song_object.id = song.id
-        # Get title
-        song_object.title = song.title
-        # Get artist
-        if song.artist:
-            song_object.artist = song.artist.name
-        else:
-            song_object.artist = "Unknown artist"
-        # Get album
-        if song.album:
-            song_object.album = song.album.name
-        else:
-            song_object.album = "Unknown album"
-        # Get the length of the song
-        song_object.length = sec_to_str(song.length_in_sec)
-        # Is favorite
-        if UsersLikesSongs.query.filter_by(user_id=current_user.id, song_id=song.id).first() is None:
-            song_object.favorite = False
-        else:
-            song_object.favorite = True
     
-        # CDN
-        # Get song cover
-        if song.file_cover:
-            song_object.cdn_song_icon = url_for('utils.cdn_song_icons', filename=song.file_cover)
-        if song.file_name:
-        # Get music file
-            song_object.cdn_song_file = url_for('utils.cdn_songs', filename=song.file_name)
+    songs, paginate = generate_song_list(page=page, entries_per_page=entries_per_page, songs_retrieved_from_database=songs_retrieved_from_database, current_page=current_page)
 
-        # URL to song
-        song_object.url_to_song = f'/song/{song.id}'
-        # URL to artist
-        song_object.url_to_artist = f'/artist/{song.artist_id}'
-        # URL to album
-        song_object.url_to_album = f'/album/{song.album_id}'
-        
-        # Get the URL of the current page. If a user 'likes' or 'unlikes' a song, it calls a route that handles liking/unliking. Then redirects to the page it was already on. (refreshes for updates page.) Very hacky. Works somehow like a charm.
-        # Done this way so you can like/unlike from multiple different pages.
-        current_page = request.url
-        
-        # URL to like
-        # Passes the current page as a argument
-        song_object.url_to_like = f'/song/{song_object.id}/like?current_page={current_page}'
-        # URL to unlike
-        # Passes the current page as a argument
-        song_object.url_to_unlike = f'/song/{song_object.id}/unlike?current_page={current_page}'
-
-        song_for_display.append(song_object)
-        
-        
-    for i in song_for_display:
-        p_note(i.favorite)
-
-    return render_template('likes.html', title=title, songs=song_for_display, paginate=songs_retrieved_from_database)
+    return render_template('likes.html', title=title, songs=songs, paginate=paginate)
