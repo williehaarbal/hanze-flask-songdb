@@ -19,7 +19,7 @@ bp_users = Blueprint('users', __name__)
 @bp_users.route("/register", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('main.home'))
+        return redirect(url_for('main.front_page'))
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -33,23 +33,22 @@ def register():
 @bp_users.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('main.home'))
+        return redirect(url_for('main.front_page'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data, force=True)
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('main.home'))
+            return redirect(next_page) if next_page else redirect(url_for('main.front_page'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('login.html', title='Login', form=form)
 
-
 @bp_users.route("/logout")
 def logout():
     logout_user()
-    return redirect(url_for('main.home'))
+    return redirect(url_for('main.front_page'))
 
 @bp_users.route('/account', methods=['GET', 'POST'])
 def account():
@@ -136,16 +135,16 @@ def account():
 def profile():
     return 'profile'
 
-@bp_users.route("/likes")
-def likes():
-    query = text('SELECT * FROM view_user_likes_song;')
-    answer = db.session.execute(query)
+# @bp_users.route("/likes")
+# def likes():
+#     query = text('SELECT * FROM view_user_likes_song;')
+#     answer = db.session.execute(query)
 
-    temp=[]
+#     temp=[]
 
-    for x in answer:
-        temp.append(f'{x[0]} likes {x[1]}')
+#     for x in answer:
+#         temp.append(f'{x[0]} likes {x[1]}')
 
-    p_err(temp)
+#     p_err(temp)
 
-    return render_template('likes.html', likes=temp)
+#     return render_template('likes.html', likes=temp)

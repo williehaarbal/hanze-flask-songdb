@@ -25,7 +25,7 @@ def front_page() -> str:
     Route for front page.
     """
 
-    # General info
+    # GENERAL :: page title
     title = 'MusicDB :: front page'
 
     # Pagination for 'latest uploaded songs'
@@ -42,7 +42,7 @@ def front_page() -> str:
         album = None
         artist = None
         length = None
-        is_favorite = False # TODO Not implemented yet
+        favorite = False # TODO Not implemented yet
         is_owner = False # TODO Not implemented yet
 
         # CDN

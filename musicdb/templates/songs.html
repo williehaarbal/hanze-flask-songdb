@@ -268,11 +268,13 @@ a:hover {
     </div>
     <div class="song-object-fav">
         {% if song.favorite %}
-            <img src="{{ url_for('static', filename='icons/star-fill.svg')}}" alt="favorite">
+            <a href="{{ song.url_to_unlike }}">
+                <img src="{{ url_for('static', filename='icons/star-fill.svg')}}" alt="favorite">
+            </a>
         {% else %}
-            <span id="song-{{ song.id }}" onclick="performLike(this.id)">
+            <a href="{{ song.url_to_like }}">
                 <img src="{{ url_for('static', filename='icons/star.svg')}}" alt="favorite">
-            </span>
+            </a>
         {% endif %}
     </div>
     <div class="song-object-time">

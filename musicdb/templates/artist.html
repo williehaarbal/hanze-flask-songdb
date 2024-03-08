@@ -322,95 +322,10 @@ a:hover {
 
 
         <div class="grid-right-songs grid-right-child">
+
+
             <!-- START -->
-            <div style="width: 100%; position: relative;">
-                <nav aria-label="Page navigation example" data-bs-theme="dark" style="position: absolute; left: 50%; transform: translateX(-50%);">
-                    <ul class="pagination custom-paginator">
-                        {% for page_num in paginate.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-                        {% if page_num %}
-                            {% if paginate.page == page_num %}
-                            <li class="page-item"><a class="page-link disabled" href="{{ url_for('songs.songs', page=page_num) }}">{{ page_num }}</a></li>
-                            {% else %}
-                            <li class="page-item"><a class="page-link" href="{{ url_for('songs.songs', page=page_num) }}">{{ page_num }}</a></li>
-                            {% endif %}
-                            {% else %}
-                            <li class="page-item page-link">...</li>
-                        {% endif %}
-                        {% endfor %}
-                    </ul>
-                </nav>
-            </div>
-
-            <br>
-            <br>
-
-            {% for song in songs %}
-
-            <div class="song-container">
-
-                <div class="song-object-picture">
-                    {% if song.cdn_song_icon %}
-                        <img src="{{ song.cdn_song_icon }}" alt="Song image" style="width: 100%; height: 100%;">
-                    {% else %}
-                        <div class="no-image">
-                            <p>NO</p>
-                            <P>IMAGE</P>
-                        </div>
-                    {% endif %}
-                </div>
-
-                <div class="song-object-title left-padding">
-                    <a href="#">
-                        <div class="vertical-center overflow-hidden">{{ song.title }}</div>
-                    </a>
-                </div>
-
-                <div class="song-object-artist left-padding">
-                    <a href="{{ song.url_to_artist }}">
-                        <div class="vertical-center overflow-hidden">{{ song.artist }}</div>
-                    </a>
-                </div>
-
-                <div class="song-object-album">
-                    <a href="{{ song.url_to_album }}">
-                        <div class="vertical-center overflow-hidden">{{ song.album }}</div>
-                    </a>
-                    
-                </div>
-                <div class="song-object-play">
-                    <!-- Gotta say; this media player is awesome -->
-                    <!-- https://essential-audio-player.net/ -->
-                    <div class="essential_audio vertical-center " style="padding-left: 10px; padding-right: 10px;" data-url="{{ song.cdn_song_file }}"></div>
-                </div>
-
-
-                <div class="song-object-download">
-                    <a href="{{ song.cdn_song_file }}" download>
-                            <img src="{{ url_for('static', filename='icons/cloud-arrow-down-fill.svg')}}" alt="favorite">
-                    </a>
-                </div>
-
-                <div class="song-object-owner">
-                    
-                </div>
-                <div class="song-object-fav">
-                    {% if song.is_favorite %}
-                        <img src="{{ url_for('static', filename='icons/star-fill.svg')}}" alt="favorite">
-                    {% else %}
-                        <span id="song-{{ song.id }}" onclick="performLike(this.id)">
-                            <img src="{{ url_for('static', filename='icons/star.svg')}}" alt="favorite">
-                        </span>
-                    {% endif %}
-                </div>
-                <div class="song-object-time">
-                    {{ song.length }}
-                </div>
-                <div class="song-object-goto">
-                </div>
-
-            </div>
-
-            {% endfor %}
+            
 
             <!-- END -->
         </div>
