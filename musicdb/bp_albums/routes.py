@@ -1,4 +1,7 @@
+from musicdb.bp_albums.func import generate_album_list
+from musicdb.bp_albums.templates.forms import UpdateAlbum
 from musicdb.bp_main.routes import sec_to_str
+from musicdb.bp_songs.func import generate_song_list
 from musicdb.models import Album, Artist, Song
 from flask_login import current_user
 from markupsafe import Markup
@@ -20,64 +23,28 @@ bp_albums = Blueprint('albums', __name__, template_folder='templates')
 ############################################################
 @bp_albums.route('/albums')
 def albums():
+    
+    # GENERAL :: page title
+    title = 'MusicDB :: Albums'
+    # GENERAL :: Current page
+    current_page = request.url
 
     if not current_user.is_authenticated:
         flash('Please login to start using this part of the website...')
         return redirect(url_for('users.login'))
+    
+    # Paginate settings
+    # TODO implement some form of paginate for albums
     page = request.args.get('page', 1, type=int)
     entries_per_page = 8
 
-    shown_album = []
-    class Temp_album():
-        name = None
-        album_cover = None
-        artist = None
-
-        # URLS
-
-        url_to_album = None
-        url_to_artist = None
-
-        def __repr__(self) -> str:
-            return f"TEMP ALBUM OBJECT :: name: {self.name}, album_cover: {self.album_cover}, artist: {self.artist} "
-
-    # all_albums_from_db = Album.query.paginate(page=page, per_page=entries_per_page)
     
-    all_albums_from_db = db.session.scalars(db.select(Album)).all()
-
-
-    for album in all_albums_from_db:
-        temp = Temp_album()
-
-        # Name
-        temp.name = album.name
-        p_note(dir(album))
-        # album_cover
-        if album.album_cover:
-            temp.album_cover = url_for('utils.cdn_song_big', filename=album.album_cover)
-        else:
-            temp.album_cover = None
-
-        # Artist
-        find_artist = Artist.query.filter(Artist.id == Album.artist_id).first()
-
-        if find_artist:
-            temp.artist = find_artist.name
-        else:
-            temp.artist = None
-        
-        # URL_to_album
-        temp.url_to_album = f'/album/{album.id}'
-
-        # url_to_artist
-        temp.url_to_artist = f'/artist/{find_artist.id}'
-
-        shown_album.append(temp)    
-        
-
-    for i in shown_album:
-        p_note(i)
-    return render_template('albums.html', albums=shown_album)
+    # Get all album objects from database
+    albums_retrieved_from_database = db.session.scalars(db.select(Album)).all()
+    
+    albums_for_display, albums_retrieved_from_database = generate_album_list(page=page, entries_per_page=entries_per_page, albums_retrieved_from_database=albums_retrieved_from_database, current_page=current_page)
+    
+    return render_template('albums.html', title=title, albums=albums_for_display)
 
 
 ############################################################
@@ -185,7 +152,7 @@ def create_album(name: str, **kwargs):
 # lijst alle nummers in album
 ############################################################
 @bp_albums.route('/album/<id>')
-def single_album(id):
+def album(id):
     
     album_id = id
     
@@ -196,88 +163,99 @@ def single_album(id):
         flash('Please login to start using this part of the website...')
         return redirect(url_for('users.login'))
     
+    entries_per_page = 1000
+    page = 1
+    # GENERAL :: Current page
+    current_page = request.url
+    
     album_info = db.session.query(Album).filter(Album.id == album_id).first()
     
     class album():
         name = album_info.name
         artist = album_info.artist.name
         description = album_info.description
+        url_to_edit = f'{request.url}/edit'
         album_cover = url_for('utils.cdn_album_cover', filename=album_info.album_cover)
     
-    song_for_display = []
-    class s():
-        # General
-        id = None
-        title = None
-        album = None
-        artist = None
-        length = None
-        is_favorite = False
-        is_owner = True
-
-        # CDN
-        cdn_song_icon = None
-        cdn_song_file = None
-        # cdn_song_download = None # I think I can use the cdn_song_file for that, for now.
-
-        # URLs
-        url_to_song = None
-        url_to_album = None
-        url_to_artist = None
+    songs_retrieved_from_database = Song.query.filter(Song.alive==True, Song.album_id == id).paginate(page=page, per_page=entries_per_page)
     
-    songs_from_db = db.session.query(Song).filter(album_id == Song.album_id)
+    
+    songs_for_display , songs_retrieved_from_database = generate_song_list(page=page, entries_per_page=entries_per_page, songs_retrieved_from_database=songs_retrieved_from_database, current_page=current_page)
 
-    for song in songs_from_db:
-        temp = s()
+    
+    
+    return render_template("album.html", album=album, songs=songs_for_display)
 
-        #GENERAL
+
+############################################################
+# ROUTE :: Edit album
+############################################################
+@bp_albums.route('/album/<album_id>/edit', methods=['GET', 'POST'])
+def album_edit(album_id):
+
+    if not current_user.is_authenticated:
+        flash('Please login to start using this size.')
+        return redirect(url_for('users.login'))
+
+    # GENERAL FOR PAGE
+
+    # GET SONG OBJECT
+    album_from_db = Album.query.filter_by(id=album_id).first()
+    
+    if album_from_db is None:
+        return redirect(url_for('main.not_found'))
+
+    title = f'MusicDB :: {album_from_db.name}'
+
+    # FORM DEFINITIONS
+    form = UpdateAlbum()
+
+    
+    # List all artists
+    artist_choices = ['<unknown>']
+    all_artists_from_db = db.session.scalars(db.select(Artist.name)).all()
+    for a in all_artists_from_db:
+        artist_choices.append(a)
+    form.artist.choices = artist_choices
+
+    # POSTING
+    if form.validate_on_submit():
+        p_note('VALIDATED')
+        album_from_db.name = form.name.data
+        next_artist = form.artist.data
+        next_artist = Artist.query.filter_by(name=next_artist).first()
+        album_from_db.artist = next_artist
+        album_from_db.description = form.description.data
+
+        db.session.commit()
+        flash(f'Song updated!')
         
-        temp.id = song.id
-        temp.title = song.title
-        # TODO implement album
-        temp.album = None
-        temp.artist = db.session.query(Artist.name).filter(Artist.id == song.artist_id).first()
-        if temp.artist:
-            temp.artist = temp.artist[0]
 
+    # FORM :: name
+    form.name.data = album_from_db.name
 
-        temp.length = sec_to_str(song.length_in_sec)
+    # FORM :: artist
+    artist_choices = ['<unknown>']
+    all_artists_from_db = db.session.scalars(db.select(Artist.name)).all()
+    for a in all_artists_from_db:
+        artist_choices.append(a)
+    form.artist.choices = artist_choices
+    if album_from_db.artist is not None:
+        form.artist.data = album_from_db.artist.name
+    else:
+        form.artist.data = '<unknown>'
 
-        p_err(dir(song))
-        
-        if song.album:
-                if song.album.name:
-                    temp.album = song.album.name
-                else:
-                    temp.song = None
-        else:
-            temp.song = None
-
-        # TODO implement favs
-        temp.is_favorite = None
-
-        # CDN
-        if song.file_cover:
-            temp.cdn_song_icon = url_for('utils.cdn_song_icons', filename=song.file_cover)
-        if song.file_name:
-            temp.cdn_song_file = url_for('utils.cdn_songs', filename=song.file_name)
-
-        # TODO implement song page
-        temp.url_to_song = f'/song/{song.id}'
-
-        # TODO implement album page
-        if song.album_id:
-            temp.url_to_album = f'/album/{song.album_id}'
-        else:
-            temp.url_to_album = None
-
-        # Artist page
-        if song.artist_id:
-            temp.url_to_artist = f'/artist/{song.artist_id}'
-        else:
-            temp.url_to_artist = None
-
-        song_for_display.append(temp)
     
+    form.description.data = album_from_db.description
+
+    # Get URL for filecover
+    if album_from_db.album_cover:
+        cover = url_for('utils.cdn_album_cover', filename=album_from_db.album_cover)
+    else:
+        cover = None
     
-    return render_template("album.html", album=album, songs=song_for_display)
+
+
+
+    
+    return render_template('album_edit.html', title=title, form=form, cover=cover, album=album_from_db)

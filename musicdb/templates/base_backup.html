@@ -36,34 +36,32 @@
 					</a>
 					
 					<!-- mid -->
-					<ul class="navbar-nav col-lg-6 justify-content-lg-center">
+					<ul class="navbar-nav col-lg-6 justify-content-lg-center" method="POST" action="" enctype="multipart/form-data">
 						
 						<li class="nav-item">
-							<form action="{{ url_for('songs.search') }}" enctype="multipart/form-data" method="POST">
-								<div class="btn-group">
-									<button type="button" class="btn btn-secondary dropdown-toggle rounded-0 rounded-start-pill" data-bs-toggle="dropdown" aria-expanded="false">Explore</button>
-									<span class="visually-hidden">Toggle Dropdown</span>
-									</button>
-									<ul class="dropdown-menu">
-									<li><a class="dropdown-item" href="{{ url_for('songs.songs') }}">Songs</a></li>
-									<li><a class="dropdown-item" href="{{ url_for('albums.albums') }}">Albums</a></li>
-									<li><a class="dropdown-item" href="{{ url_for('artists.artist_list') }}">Artists</a></li>
-									<li><a class="dropdown-item" href="#">Profiles</a></li>
-									<li><hr class="dropdown-divider"></li>
-									<li><a class="dropdown-item" href="{{ url_for('songs.upload') }}">Upload</a></li>
-									</ul>
-								</div>
-							</li>
-
-							<li class="nav-item">
-								<input name="search_string" class="form-control rounded-0" id="c-navbar-search" type="search" placeholder="Search" aria-label="Search">
-							</li>
-							<li class="nav-item">
-								<button type="submit" class="btn btn btn-secondary rounded-end-pill">
-									<img src="{{ url_for('static', filename='icons/search.svg') }}" style="position: relative; bottom: 2px; right: 3px; filter: invert(100%);">
+							<div class="btn-group">
+								<button type="button" class="btn btn-secondary dropdown-toggle rounded-0 rounded-start-pill" data-bs-toggle="dropdown" aria-expanded="false">Explore</button>
+								<span class="visually-hidden">Toggle Dropdown</span>
 								</button>
-							</li>
-						</form>
+								<ul class="dropdown-menu">
+								<li><a class="dropdown-item" href="{{ url_for('songs.songs') }}">Songs</a></li>
+								<li><a class="dropdown-item" href="{{ url_for('albums.albums') }}">Albums</a></li>
+								<li><a class="dropdown-item" href="{{ url_for('artists.artist_list') }}">Artists</a></li>
+								<li><a class="dropdown-item" href="#">Profiles</a></li>
+								<li><hr class="dropdown-divider"></li>
+								<li><a class="dropdown-item" href="{{ url_for('songs.upload') }}">Upload</a></li>
+								</ul>
+							</div>
+						</li>
+
+						<li class="nav-item">
+							<input class="form-control rounded-0" id="c-navbar-search" type="search" placeholder="Search" aria-label="Search">
+						</li>
+						<li class="nav-item">
+							<button type="button" class="btn btn btn-secondary rounded-end-pill">
+								<img src="{{ url_for('static', filename='icons/search.svg') }}" style="position: relative; bottom: 2px; right: 3px; filter: invert(100%);">
+							</button>
+						</li>
 					</ul>
 
 					

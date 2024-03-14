@@ -122,3 +122,4 @@ def front_page() -> str:
 
     return render_template('home.html', title=title, songs=songs_for_display)
 
+

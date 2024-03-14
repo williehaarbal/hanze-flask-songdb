@@ -4,55 +4,19 @@
 <!-- Extra markup that goes in <head> -->
 {% block head %}
 {{ super() }}
-
+<!-- CSS for audio player -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/essential_audio.css') }}"></link>
 
 <style>
-.parent-container {
-	display: grid;
-	grid-template-columns: 40% 60%;
-	grid-template-rows: auto auto;
-	gap: 10px;
+
+a {
+    color: white;
+    text-decoration: none;
 }
 
-a, a:active, a:hover, a:visited{
-	color: white;
-	text-decoration: none;
-}
-
-.container-left {
-	color: white;
-	grid-column: 0 / 1;
-	display: grid;
-	grid-template-columns: auto auto;
-	border-radius: 25px;
-	overflow: hidden;
-}
-
-.container-left .with-text {
-	background-color: rgba(0, 0, 0, 0.4);
-	height: fit-content;
-	border-radius: 25px;
-}
-
-.container-right {
-	/* THE FUCK IS GOING ON HERE. Should be 1/2 but only works with 0 / 1?! No time to debug. Just accept. Somehow. */
-	grid-column: 0 / 1;
-	grid-row: 0 / 1;
-}
-
-.album-info {
-	padding-left: 10px;
-}
-
-.album-name {
-    font-family: 'Open Sans', sans-serif;
-	font-size: 3rem;
-}
-
-.album-artist {
-    font-family: 'Open Sans', sans-serif;
-	font-size: 2rem;
+a:hover {
+    color: #f05740;
+    text-decoration: none;
 }
 
 .song-container {
@@ -63,7 +27,7 @@ a, a:active, a:hover, a:visited{
 
     margin-top: 12px;
 
-    grid-template-columns: 0px 1fr 1fr 1fr 44px 44px 44px;
+    grid-template-columns: 88px 1fr 1fr 1fr 44px 44px 44px;
 
     grid-template-rows: 44px 44px;
 
@@ -207,47 +171,49 @@ a, a:active, a:hover, a:visited{
     color: #000;
     background-color: #c94d39;
 }
+
 </style>
-
-
 {% endblock %}
-
 
 <!-- Homepage content -->
 {% block content %}
 
+<br>
+
+<div style="width: 100%; position: relative;">
+    <nav aria-label="Page navigation example" data-bs-theme="dark" style="position: absolute; left: 50%; transform: translateX(-50%);">
+        <ul class="pagination custom-paginator">
+            {% for page_num in paginate.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if paginate.page == page_num %}
+                <li class="page-item"><a class="page-link disabled" href="{{ url_for('songs.songs', page=page_num) }}">{{ page_num }}</a></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="{{ url_for('songs.songs', page=page_num) }}">{{ page_num }}</a></li>
+                {% endif %}
+                {% else %}
+                <li class="page-item page-link">...</li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+</div>
+
+
 
 <br>
 <br>
+<br>
 
-<div class="parent-container">
-	<div class="container-left">
-		<div class="with-text">
-			<img src="{{ album.album_cover }}" style="width: 100%;" alt="">
+<h1>Upload session: {{ session_id }}</h1>
 
-			<br>
-			<div class="album-info">
-				<div class="album-name">{{ album.name }}</div>
-				<a href="#"><div class="album-artist">{{ album.artist }}</div></a>
 
-				<br>
-				<h3>Description:</h3>
-				<div>{{ album.description }}</div>
-
-				<br>
-			</div>
-		</div>
-		<div></div>
-	</div>
-
-	<div class="container-right">
-		{% for song in songs %}
+{% for song in songs %}
 
 <div class="song-container">
 
-    <div class="song-object-picture" style="width: 0%;">
+    <div class="song-object-picture">
         {% if song.cdn_song_icon %}
-            <img src="{{ song.cdn_song_icon }}" alt="Song image" style="width: 0%; height: 0%;">
+            <img src="{{ song.cdn_song_icon }}" alt="Song image" style="width: 100%; height: 100%;">
         {% else %}
             <div class="no-image">
                 <p>NO</p>
@@ -320,20 +286,28 @@ a, a:active, a:hover, a:visited{
 </div>
 
 {% endfor %}
-	</div>
-</div>
-
 <br>
-<br>
-<br>
-<a href="{{ album.url_to_edit }}"><button type="button" class="btn btn-success">Edit</button></a>
 <br>
 <br>
 <br>
 <br>
 <br>
 
-
+<script>
+function performLike(number) {
+    $.ajax({
+            type: "POST",
+            contentType: "application/json",
+            headers: {                                  
+                'Accept': 'application/json',
+                'Content-Type': 'application/json' 
+            },
+            url: "/likes",
+            dataType: 'json',
+            data: {"data": number}
+        })
+}
+</script>
 
 <script src="{{ url_for('static', filename='js/essential_audio.js')}}"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>

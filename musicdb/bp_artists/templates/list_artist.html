@@ -165,15 +165,15 @@
 
 <div class="grid-parent">
 
-    {% for artist in artist_list %}
+    {% for artist in artists %}
     
     <div class="grid-child">
         <div class="grid-dummy">
             <div class="grid-content">
                 <div class="cover">
                     <a href="{{ artist.url_to_artist }}">
-                        {% if artist.cover_img %}
-                            <img src="{{ artist.cover_img }}" alt="">
+                        {% if artist.cdn_cover_img %}
+                            <img src="{{ artist.cdn_cover_img }}" alt="">
                         {% else %}
                         <img src="{{ url_for('static', filename='img/unknown_band.png') }}" alt="">
                         {% endif %}
@@ -204,6 +204,12 @@
     
     {% endfor %}
 
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
 
 <script src="{{ url_for('static', filename='js/essential_audio.js')}}"></script>
 {% endblock %}

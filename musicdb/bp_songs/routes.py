@@ -1,11 +1,12 @@
 import math
-from sqlalchemy import func, text
+from sqlalchemy import func, text, or_
 from werkzeug.utils import secure_filename
 from musicdb.bp_albums.routes import create_album
 from musicdb.bp_artists.routes import create_artist, parse_artist_url
 from musicdb.bp_utils.func import sec_to_str
 from musicdb.models import Album, Artist, Song, UsersLikesSongs
 from .func import generate_song_list
+
 from flask_login import current_user
 from musicdb import app, db
 from musicdb.general import p_err, p_note
@@ -17,7 +18,7 @@ import eyed3
 import uuid
 import os
 
-bp_songs = Blueprint('songs', __name__)
+bp_songs = Blueprint('songs', __name__, template_folder='templates')
 
 ############################################################
 # Route for uploading songs
@@ -34,9 +35,8 @@ def upload():
     if form.validate_on_submit():
 
         upload_session = upload_songs(form.files.data)
-        return upload_session
-        # return redirect(url_for('songs.songs'))
-    
+        return redirect( f"{url_for('songs.upload_session', session_id=upload_session)}")
+
     return render_template('upload.html', form=form)
 
 
@@ -46,7 +46,7 @@ def upload():
 # if any files got uploaded succesfull.
 # TODO BASICS, rewrite, split responsibilities
 ############################################################
-def upload_songs(files) -> None:
+def upload_songs(files) -> int:
 
     # Songs that got succesfully uploaded
     uploaded_files = []
@@ -519,3 +519,75 @@ def likes():
     songs, paginate = generate_song_list(page=page, entries_per_page=entries_per_page, songs_retrieved_from_database=songs_retrieved_from_database, current_page=current_page)
 
     return render_template('likes.html', title=title, songs=songs, paginate=paginate)
+
+
+############################################################
+# ROUTE :: SEARCH
+############################################################
+@bp_songs.route('/search', methods=['GET', 'POST'])
+def search():
+    
+    # GENERAL :: title
+    title = f'MusicDB :: search'
+    # GENERAL :: current page
+    current_page = request.url
+    
+    
+    # Pagination settings 
+    page = request.args.get('page', 1, type=int)
+    entries_per_page = 999
+    
+    # If the current user isn't authenticated (anonymouse), then redirect him/her to login page.
+    if not current_user.is_authenticated:
+        flash('Please login to access songs...')
+        return redirect(url_for('users.login'))
+    
+    # Search query provided by user
+    search = request.form['search_string']
+    
+    # Get songs to display for this page.
+    # Filter by:
+    # Is 'search' in name of song;
+    # Is 'search' in name of album;
+    # Is 'search' in name of artist;
+    songs_retrieved_from_database = Song.query.filter(
+        Song.alive==True,
+        Song.title.like(f'%{search}%')
+        ).paginate(page=page, per_page=entries_per_page)
+
+    # Code reuse for generating song_list.
+    songs, paginate = generate_song_list(page=page, entries_per_page=entries_per_page, songs_retrieved_from_database=songs_retrieved_from_database, current_page=current_page)
+
+    return render_template('search.html', title=title, songs=songs, paginate=paginate, search=search)
+
+
+@bp_songs.route('/upload/<session_id>')
+def upload_session(session_id):
+    
+    # GENERAL :: page title
+    title = f'MusicDB :: upload session {session_id}'
+
+    # GENERAL :: Current page
+    current_page = request.url
+    
+    # Pagination settings
+    page = request.args.get('page', 1, type=int)
+    entries_per_page = 999
+
+    # Cannot show page if visitor is logged in.
+    if not current_user.is_authenticated:
+        flash("You shouldn't be here")
+        return redirect(url_for('users.login'))
+    
+    # Get songs to display for this page.
+    # Also use filter to filter out which songs (for example liked songs, or certain name)
+    songs_retrieved_from_database = Song.query.filter(
+        Song.alive==True,
+        Song.upload_session==session_id
+        ).paginate(page=page, per_page=entries_per_page)
+
+    # Code reuse for generating song_list.
+    songs, paginate = generate_song_list(page=page, entries_per_page=entries_per_page, songs_retrieved_from_database=songs_retrieved_from_database, current_page=current_page)
+
+    return render_template('upload_session.html', session_id=session_id, title=title, songs=songs, paginate=paginate)
+    
